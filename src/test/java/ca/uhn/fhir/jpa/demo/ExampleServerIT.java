@@ -10,12 +10,14 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.hl7.fhir.dstu3.model.Patient;
 import org.hl7.fhir.instance.model.api.IIdType;
 import org.junit.*;
+import org.junit.experimental.categories.Category;
 
 import ca.uhn.fhir.context.FhirContext;
 import ca.uhn.fhir.rest.client.api.IGenericClient;
 import ca.uhn.fhir.rest.client.api.ServerValidationModeEnum;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 
+@Category(IntegrationTest.class)
 public class ExampleServerIT {
 
 	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(ExampleServerIT.class);
@@ -27,7 +29,7 @@ public class ExampleServerIT {
 	private static String ourServerBase;
 
 	// TODO provide as integration tests
-	@Ignore("Test is ignored because we need to deploy the MySQL server")
+	// @Ignore("Test is ignored because we need to deploy the MySQL server")
 	@Test
 	public void testCreateAndRead() throws IOException {
 		ourLog.info("Base URL is: http://localhost:" + ourPort + "/baseDstu3");

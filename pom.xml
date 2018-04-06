@@ -26,6 +26,10 @@
 		<thymeleaf-version>3.0.9.RELEASE</thymeleaf-version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ebay_cors_filter_version>1.0.1</ebay_cors_filter_version>
+
+		<!-- Unit and integration tests management -->
+		<skip.unit.tests>false</skip.unit.tests>
+		<skip.integration.tests>true</skip.integration.tests>
 	</properties>
 
 	<!-- <parent> <groupId>ca.uhn.hapi.fhir</groupId> <artifactId>hapi-fhir</artifactId> 
@@ -42,6 +46,22 @@
 		</repository>
 	</repositories>
 		
+	<profiles>
+		<profile>
+			<id>ut</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+		<profile>
+			<id>it</id>
+			<properties>
+				<skip.integration.tests>false</skip.integration.tests>
+				<skip.unit.tests>true</skip.unit.tests>
+			</properties>
+		</profile>
+	</profiles>
+
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -271,8 +291,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
+					<source>1.8</source>
+					<target>1.8</target>
 				</configuration>
 			</plugin>
 
@@ -308,22 +328,40 @@
 				</configuration>
 			</plugin>
 
-			<!-- This is to run the integration tests -->
+			<!-- Add integration tests -->
+			<!-- Skip unit testing -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.19.1</version>
+				<configuration>
+					<groups>ca.uhn.fhir.jpa.demo.ExampleServerIT</groups>
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-failsafe-plugin</artifactId>
-				<configuration>
-					<redirectTestOutputToFile>true</redirectTestOutputToFile>
-				</configuration>
+				<version>2.19.1</version>
 				<executions>
 					<execution>
+						<id>it</id>
 						<goals>
 							<goal>integration-test</goal>
 							<goal>verify</goal>
 						</goals>
+						<configuration>
+							<includes>
+								<include>**/*ServerIT.java</include>
+							</includes>
+							<groups>ca.uhn.fhir.jpa.demo.IntegrationTest</groups>
+							<skipTests>${skip.integration.tests}</skipTests>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
+
 
 		</plugins>
 	</build>

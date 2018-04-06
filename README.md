@@ -2,71 +2,6 @@
 
 Hapi-fhir-jpaserver-example-mysql-oauth includes as the name states support for mySQL and OAuth. 
 
-### MySQL configuration
-We follow the recommended [MySQL configuration](https://groups.google.com/forum/#!topic/hapi-fhir/ValHrT3hAj0) including extra jpaProperties to [avoid permission problems with Lucene indexes](https://groups.google.com/forum/#!topic/hapi-fhir/wyh4TEpUuSA) of the default configuration:
-
-1. Add the mysql dependency to the pom:
-```
-    <dependency>
-        <groupId>mysql</groupId>
-        <artifactId>mysql-connector-java</artifactId>
-        <version>6.0.5</version>
-    </dependency>
-```
-2. In FhirServerConfig
-
-* In the data source
-  
-```
-    public DataSource dataSource() {
-      BasicDataSource retVal = new BasicDataSource();
-        try {
-            retVal.setDriver(new com.mysql.cj.jdbc.Driver());
-        } catch (SQLException e) {
-        // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
-		
-        retVal.setUrl("jdbc:mysql://localhost:3306/dbfhir?useSSL=false&serverTimezone=UTC");
-        retVal.setUsername("fhirman");
-        retVal.setPassword("******");
-        return retVal;
-    }
-```
-* In the JPA properties
-```
-    private Properties jpaProperties() {
-
-      Properties extraProperties = new Properties();
-
-      // Use MySQL hibernate
-      extraProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
-	  
-      // To avoid problems with Lucene indexes permissions
-      extraProperties.put("hibernate.search.default.indexBase", "/var/lib/tomcat8/webapps/hapi-fhir-jpaserver-example-mysql-oauth/indexes");
-    }
-```
-### OAuth2 authorization
-
-[OAuth2 authorization in HAPI](http://hapifhir.io/doc_rest_server_security.html#Authorization_Interceptor) is done [via Interceptors](http://hapifhir.io/doc_rest_server_interceptor.html). We reuse the [careconnect implementation](https://github.com/nhsconnect/careconnect-reference-implementation/blob/master/ccri-fhirgatewayhttps/src/main/java/uk/nhs/careconnect/ri/gateway/https/oauth2/OAuthTokenUtil.java) creating a new IServerInterceptor in FhirConfig that is automatically registered when launching the server:
-```
-    @Bean(autowire = Autowire.BY_TYPE)
-    public IServerInterceptor subscriptionKeyCloakInterceptor() {
-       KeyCloakInterceptor retVal = new KeyCloakInterceptor();
-       return retVal;
-    }
-```
-
-We use as IdM [KeyCloak](http://www.keycloak.org/). Provision scripts to run [KeyCloak and HAPI behind a reverse proxy]() are provided [here](). The REST API which provides login and isValid authorization are also provided [here](). Last thing is to configure the [HAPI client including the authorization token in the header](http://hapifhir.io/doc_rest_client_interceptor.html):
-```
-    BearerTokenAuthInterceptor authInterceptor = new BearerTokenAuthInterceptor(token);
-
-    // Create a client and post the transaction to the server
-    IGenericClient client = ctx.newRestfulGenericClient(FHIR_URL);
-    // Register the interceptor with your client (either style)
-    client.registerInterceptor(authInterceptor);
-```
-
 ## Running hapi-fhir-jpaserver-example in Tomcat from IntelliJ
 
 Install Tomcat.
@@ -124,3 +59,68 @@ Note: with this command data is persisted across container restarts, but not aft
     * Hibernate search are not compatible with all ElasticSearch version. If you are using Hibernate search: 5.6 or 5.7, the compatible ElasticSearch version is 2.0 - 2.4. If you are using Hibernate search: 5.8 or 5.9, the compatible ElasticSearch version is
     2.0 - 5.6.
     * Please check all the limitations in the reference documentation: https://docs.jboss.org/hibernate/search/5.7/reference/en-US/html_single/#elasticsearch-limitations before use the integration.
+
+#### MySQL configuration
+We follow the recommended [MySQL configuration](https://groups.google.com/forum/#!topic/hapi-fhir/ValHrT3hAj0) including extra jpaProperties to [avoid permission problems with Lucene indexes](https://groups.google.com/forum/#!topic/hapi-fhir/wyh4TEpUuSA) of the default configuration:
+
+1. Add the mysql dependency to the pom:
+```
+    <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>6.0.5</version>
+    </dependency>
+```
+2. In FhirServerConfig
+
+* In the data source
+  
+```
+    public DataSource dataSource() {
+      BasicDataSource retVal = new BasicDataSource();
+        try {
+            retVal.setDriver(new com.mysql.cj.jdbc.Driver());
+        } catch (SQLException e) {
+        // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+		
+        retVal.setUrl("jdbc:mysql://localhost:3306/dbfhir?useSSL=false&serverTimezone=UTC");
+        retVal.setUsername("fhirman");
+        retVal.setPassword("******");
+        return retVal;
+    }
+```
+* In the JPA properties
+```
+    private Properties jpaProperties() {
+
+      Properties extraProperties = new Properties();
+
+      // Use MySQL hibernate
+      extraProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
+	  
+      // To avoid problems with Lucene indexes permissions
+      extraProperties.put("hibernate.search.default.indexBase", "/var/lib/tomcat8/webapps/hapi-fhir-jpaserver-example-mysql-oauth/indexes");
+    }
+```
+#### OAuth2 authorization
+
+[OAuth2 authorization in HAPI](http://hapifhir.io/doc_rest_server_security.html#Authorization_Interceptor) is done [via Interceptors](http://hapifhir.io/doc_rest_server_interceptor.html). We reuse the [careconnect implementation](https://github.com/nhsconnect/careconnect-reference-implementation/blob/master/ccri-fhirgatewayhttps/src/main/java/uk/nhs/careconnect/ri/gateway/https/oauth2/OAuthTokenUtil.java) creating a new IServerInterceptor in FhirConfig that is automatically registered when launching the server:
+```
+    @Bean(autowire = Autowire.BY_TYPE)
+    public IServerInterceptor subscriptionKeyCloakInterceptor() {
+       KeyCloakInterceptor retVal = new KeyCloakInterceptor();
+       return retVal;
+    }
+```
+
+We use as IdM [KeyCloak](http://www.keycloak.org/). Provision scripts to run [KeyCloak and HAPI behind a reverse proxy]() are provided [here](). The REST API which provides login and isValid authorization are also provided [here](). Last thing is to configure the [HAPI client including the authorization token in the header](http://hapifhir.io/doc_rest_client_interceptor.html):
+```
+    BearerTokenAuthInterceptor authInterceptor = new BearerTokenAuthInterceptor(token);
+
+    // Create a client and post the transaction to the server
+    IGenericClient client = ctx.newRestfulGenericClient(FHIR_URL);
+    // Register the interceptor with your client (either style)
+    client.registerInterceptor(authInterceptor);
+```

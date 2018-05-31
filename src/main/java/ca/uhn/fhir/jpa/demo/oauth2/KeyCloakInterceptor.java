@@ -39,7 +39,10 @@ import ca.uhn.fhir.rest.server.interceptor.InterceptorAdapter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 public class KeyCloakInterceptor extends InterceptorAdapter {
@@ -95,7 +98,14 @@ public class KeyCloakInterceptor extends InterceptorAdapter {
             throw new AuthenticationException("Invalid OAuth Header. Missing Bearer prefix");
         
         RestTemplate restTemplate = new RestTemplate();
-        Token oauthToken = restTemplate.getForObject(KEYCLOAK_URL + authToken, Token.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("token", authToken);
+
+        HttpEntity<String> entity = new HttpEntity<String>(headers);
+
+        ResponseEntity<Token> response = restTemplate.exchange(
+        		KEYCLOAK_URL, HttpMethod.GET, entity, Token.class);
+        Token oauthToken = response.getBody();        
         
         if (oauthToken.getValid() == false) {
             logger.warn("OAuth2 Authentication failure. Invalid OAuth Token supplied in Authorization Header on Request.");

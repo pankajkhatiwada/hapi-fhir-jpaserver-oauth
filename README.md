@@ -115,7 +115,7 @@ We follow the recommended [MySQL configuration](https://groups.google.com/forum/
     }
 ```
 
-We use as IdM [KeyCloak](http://www.keycloak.org/). Provision scripts to run [KeyCloak and HAPI behind a reverse proxy]() are provided [here](). The REST API which provides login and isValid authorization are also provided [here](). Last thing is to configure the [HAPI client including the authorization token in the header](http://hapifhir.io/doc_rest_client_interceptor.html):
+We use as IdM [KeyCloak](http://www.keycloak.org/). Provision scripts to run [KeyCloak and HAPI behind a reverse proxy](https://github.com/Codingpedia/codingmarks-api/wiki/Keycloak-Setup-for-Production) are provided [here](https://github.com/AriHealth/puppet-ari). The REST API which provides login and isValid authorization are also provided [here](https://github.com/AriHealth/keycloak-auth). Last thing is to configure the [HAPI client including the authorization token in the header](http://hapifhir.io/doc_rest_client_interceptor.html):
 ```
     BearerTokenAuthInterceptor authInterceptor = new BearerTokenAuthInterceptor(token);
 

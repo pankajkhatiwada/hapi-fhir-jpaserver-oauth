@@ -1,5 +1,5 @@
 #!/bin/sh
 
 mvn package && \
-  docker build -t hapi-fhir/hapi-fhir-jpaserver-example-mysql-oauth .
+  docker build -t ccavero/hapi-fhir-jpaserver-oauth:0.0.1 .
 

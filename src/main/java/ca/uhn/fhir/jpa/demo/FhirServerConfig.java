@@ -109,11 +109,11 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 
 	private Properties jpaProperties() {
 		LUCENE_FOLDER = System.getenv("LUCENE_FOLDER");
-
 		if (LUCENE_FOLDER == null)
 			LUCENE_FOLDER = "target/lucenefiles";
 
 		Properties extraProperties = new Properties();
+		MYSQL_URL = System.getenv("MYSQL_URL");
 		if (MYSQL_URL != null && (MYSQL_URL.isEmpty() == false) )  
 			extraProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
 		else

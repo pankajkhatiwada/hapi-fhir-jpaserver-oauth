@@ -38,6 +38,7 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FhirServerConfig.class);
 
 	// Const from properties
+	private String DB_VENDOR;
 	private String MYSQL_URL;
 	private String MYSQL_USER;
 	private String MYSQL_PASS;
@@ -72,17 +73,26 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 		 * when generating the war file. 
 		 */
 		
+		DB_VENDOR = System.getenv("DB_VENDOR");
 		MYSQL_URL = System.getenv("MYSQL_URL");
 		MYSQL_USER = System.getenv("MYSQL_USER");
 		MYSQL_PASS = System.getenv("MYSQL_PASS");
 		
-		if (MYSQL_USER == null)
-			MYSQL_USER = "";
-		
-		if (MYSQL_PASS == null)
-			MYSQL_PASS = "";
+		if (DB_VENDOR == null)
+			DB_VENDOR = "H2";
 
-		if (MYSQL_URL != null && (MYSQL_URL.isEmpty() == false) ) { 
+
+		if ("MYSQL".equalsIgnoreCase(DB_VENDOR) == true ) { 
+
+			if (MYSQL_URL == null)
+				MYSQL_URL = "";
+
+			if (MYSQL_USER == null)
+				MYSQL_USER = "";
+			
+			if (MYSQL_PASS == null)
+				MYSQL_PASS = "";
+			
 			try {
 				retVal.setDriver(new com.mysql.jdbc.Driver());
 			} catch (SQLException e) {
@@ -113,8 +123,8 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 			LUCENE_FOLDER = "target/lucenefiles";
 
 		Properties extraProperties = new Properties();
-		MYSQL_URL = System.getenv("MYSQL_URL");
-		if (MYSQL_URL != null && (MYSQL_URL.isEmpty() == false) )  
+		LOGGER.info("DB_VENDOR: " + DB_VENDOR);
+		if ("MYSQL".equalsIgnoreCase(DB_VENDOR) == true )  
 			extraProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
 		else
 			extraProperties.put("hibernate.dialect", org.hibernate.dialect.DerbyTenSevenDialect.class.getName());

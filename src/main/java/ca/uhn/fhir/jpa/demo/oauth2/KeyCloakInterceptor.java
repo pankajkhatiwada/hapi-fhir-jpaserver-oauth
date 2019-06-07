@@ -47,11 +47,9 @@ import org.springframework.web.client.RestTemplate;
 public class KeyCloakInterceptor extends InterceptorAdapter {
 	private static final Logger logger = LoggerFactory.getLogger(KeyCloakInterceptor.class);
 	
-	private final static String CONFIGURATIONFILE = "configuration.properties";
-
 	// Const from properties
-	private String OAUTH;
-	private String KEYCLOAK_URL;
+	private String OAUTH_ENABLE;
+	private String OAUTH_URL;
 	private String BEARER = "BEARER ";
 
 	@Override
@@ -65,23 +63,20 @@ public class KeyCloakInterceptor extends InterceptorAdapter {
         } */
 
 		/**
-		 * Read the properties file. It should be located in the resources folder 
-		 * when generating the war file. 
+		 * Read the environment variables 
 		 */
 		
-		try {
-			Properties prop = new Properties();
-			InputStream inputStream = getClass().getClassLoader().getResourceAsStream(CONFIGURATIONFILE);
-			prop.load(inputStream);
-			OAUTH = prop.getProperty("OAuth");
-			KEYCLOAK_URL = prop.getProperty("keycloakUrl");
-			logger.debug("OAUTH: " + OAUTH + " to url " + KEYCLOAK_URL);
-		} catch (IOException e) {
-			logger.error("Configuration file not found", e);
-		}
+		OAUTH_ENABLE =  System.getenv("OAUTH_ENABLE");
+		OAUTH_URL =  System.getenv("OAUTH_URL");
+		
+		if (OAUTH_ENABLE == null) 
+			OAUTH_ENABLE = "false";
+
+		if (OAUTH_URL == null)
+			OAUTH_URL = "http://localhost:8081/user";
 		
 		// To easily enable/disable OAuth authentication
-        if (Boolean.valueOf(OAUTH) == false)
+        if (Boolean.valueOf(OAUTH_ENABLE) == false)
         	return true;
         
 		String authHeader = theRequest.getHeader(HttpHeaders.AUTHORIZATION);
@@ -98,15 +93,15 @@ public class KeyCloakInterceptor extends InterceptorAdapter {
         
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
-        headers.set("token", authToken);
+        headers.set("Authorization", authToken);
 
         HttpEntity<String> entity = new HttpEntity<String>(headers);
 
-        ResponseEntity<Token> response = restTemplate.exchange(
-        		KEYCLOAK_URL, HttpMethod.GET, entity, Token.class);
-        Token oauthToken = response.getBody();        
+        ResponseEntity<String> response = restTemplate.exchange(
+        		OAUTH_URL, HttpMethod.GET, entity, String.class);
+        // AccessToken oauthToken = response.getBody();        
         
-        if (oauthToken.getValid() == false) {
+   		if (response.getStatusCode().value() != 200) {
             logger.warn("OAuth2 Authentication failure. Invalid OAuth Token supplied in Authorization Header on Request.");
             throw new AuthenticationException("Unauthorised access to protected resource");
         }

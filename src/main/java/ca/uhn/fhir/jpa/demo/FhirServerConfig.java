@@ -1,7 +1,5 @@
 package ca.uhn.fhir.jpa.demo;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Properties;
 
@@ -10,7 +8,6 @@ import javax.sql.DataSource;
 
 import ca.uhn.fhir.jpa.search.LuceneSearchMappingFactory;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.apache.commons.lang3.time.DateUtils;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,11 +35,17 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FhirServerConfig.class);
 
 	// Const from properties
-	private String DB_VENDOR;
-	private String MYSQL_URL;
-	private String MYSQL_USER;
-	private String MYSQL_PASS;
-	private String LUCENE_FOLDER = "target/lucenefiles";
+	private static final String DB_VENDOR = System.getenv("DB_VENDOR");
+	private static final String MYSQL_URL = System.getenv("MYSQL_URL");
+	private static final String MYSQL_USER = System.getenv("MYSQL_USER");
+	private static final String MYSQL_PASS = System.getenv("MYSQL_PASS");
+	private static final String LUCENE_FOLDER = System.getenv("LUCENE_FOLDER");	
+	
+	private static final String DEFAULT_LUCENE_FOLDER = "target/lucenefiles";
+	private static final String MYSQL_DB_VENDOR = "MYSQL";
+	private static final String DERBY_DB_VENDOR = "DERBY";
+
+	
 
 	/**
 	 * Configure FHIR properties around the the JPA server via this bean
@@ -55,55 +58,35 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	}
 
 	/**
-	 * The following bean configures the database connection. The 'url' property value of "jdbc:derby:directory:jpaserver_derby_files;create=true" indicates that the server should save resources in a
-	 * directory called "jpaserver_derby_files".
+	 * The following bean configures the database connection. 
+	 * The 'url' property value of "jdbc:derby:directory:jpaserver_derby_files;create=true"
+	 * indicates that the server should save resources in a directory called "jpaserver_derby_files".
 	 * 
 	 * A URL to a remote database could also be placed here, along with login credentials and other properties supported by BasicDataSource.
+	 * @throws SQLException 
 	 */
 	@Bean(destroyMethod = "close")
 	public DataSource dataSource() {
-		BasicDataSource retVal = new BasicDataSource();
-		retVal.setDriver(new org.apache.derby.jdbc.EmbeddedDriver());
-		retVal.setUrl("jdbc:derby:directory:target/jpaserver_derby_files;create=true");
-		retVal.setUsername("");
-		retVal.setPassword("");
-
-		/**
-		 * Read the properties file. It should be located in the resources folder 
-		 * when generating the war file. 
-		 */
-		
-		DB_VENDOR = System.getenv("DB_VENDOR");
-		MYSQL_URL = System.getenv("MYSQL_URL");
-		MYSQL_USER = System.getenv("MYSQL_USER");
-		MYSQL_PASS = System.getenv("MYSQL_PASS");
-		
-		if (DB_VENDOR == null)
-			DB_VENDOR = "H2";
-
-
-		if ("MYSQL".equalsIgnoreCase(DB_VENDOR) == true ) { 
-
-			if (MYSQL_URL == null)
-				MYSQL_URL = "";
-
-			if (MYSQL_USER == null)
-				MYSQL_USER = "";
-			
-			if (MYSQL_PASS == null)
-				MYSQL_PASS = "";
-			
-			try {
-				retVal.setDriver(new com.mysql.jdbc.Driver());
-			} catch (SQLException e) {
-			LOGGER.error("MySQL driver not properly loaded", e);
+		try(BasicDataSource retVal = new BasicDataSource()) {
+			switch (DB_VENDOR) {
+				case MYSQL_DB_VENDOR:
+					retVal.setDriver(new com.mysql.jdbc.Driver());
+					retVal.setUrl(MYSQL_URL);
+					retVal.setUsername(MYSQL_USER);
+					retVal.setPassword(MYSQL_PASS);
+					break;
+				case DERBY_DB_VENDOR:
+				default:
+					retVal.setDriver(new org.apache.derby.jdbc.EmbeddedDriver());
+					retVal.setUrl("jdbc:derby:directory:target/jpaserver_derby_files;create=true");
+					retVal.setUsername("");
+					retVal.setPassword("");
 			}
-			
-			retVal.setUrl(MYSQL_URL);
-			retVal.setUsername(MYSQL_USER);
-			retVal.setPassword(MYSQL_PASS);
+			return retVal;
+		} catch (SQLException sqlex) {
+			LOGGER.error("Exception in database connection", sqlex);
+			return null;
 		}
-		return retVal;
 	}
 
 	@Bean()
@@ -118,30 +101,29 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	}
 
 	private Properties jpaProperties() {
-		LUCENE_FOLDER = System.getenv("LUCENE_FOLDER");
-		if (LUCENE_FOLDER == null)
-			LUCENE_FOLDER = "target/lucenefiles";
-
 		Properties extraProperties = new Properties();
-		LOGGER.info("DB_VENDOR: " + DB_VENDOR);
-		if ("MYSQL".equalsIgnoreCase(DB_VENDOR) == true )  
-			extraProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
-		else
-			extraProperties.put("hibernate.dialect", org.hibernate.dialect.DerbyTenSevenDialect.class.getName());
-		extraProperties.put("hibernate.format_sql", "true");
-		extraProperties.put("hibernate.show_sql", "false");
+		LOGGER.info("DB_VENDOR: {}", DB_VENDOR);
+
+		switch (DB_VENDOR) {
+			case MYSQL_DB_VENDOR:
+				extraProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
+				break;
+			case DERBY_DB_VENDOR:
+			default:
+				extraProperties.put("hibernate.dialect", org.hibernate.dialect.DerbyTenSevenDialect.class.getName());
+		}
+		extraProperties.put("hibernate.format_sql", Boolean.TRUE.toString());
+		extraProperties.put("hibernate.show_sql", Boolean.FALSE.toString());
 		extraProperties.put("hibernate.hbm2ddl.auto", "update");
 		extraProperties.put("hibernate.jdbc.batch_size", "20");
-		extraProperties.put("hibernate.cache.use_query_cache", "false");
-		extraProperties.put("hibernate.cache.use_second_level_cache", "false");
-		extraProperties.put("hibernate.cache.use_structured_entries", "false");
-		extraProperties.put("hibernate.cache.use_minimal_puts", "false");
+		extraProperties.put("hibernate.cache.use_query_cache", Boolean.FALSE.toString());
+		extraProperties.put("hibernate.cache.use_second_level_cache", Boolean.FALSE.toString());
+		extraProperties.put("hibernate.cache.use_structured_entries", Boolean.FALSE.toString());
+		extraProperties.put("hibernate.cache.use_minimal_puts", Boolean.FALSE.toString());
 		extraProperties.put("hibernate.search.model_mapping", LuceneSearchMappingFactory.class.getName());
 		extraProperties.put("hibernate.search.default.directory_provider", "filesystem");
-//		extraProperties.put("hibernate.search.default.indexBase", "/var/lib/tomcat8/webapps/hapi/indexes");
-		extraProperties.put("hibernate.search.default.indexBase", LUCENE_FOLDER);
+		extraProperties.put("hibernate.search.default.indexBase", LUCENE_FOLDER == null? DEFAULT_LUCENE_FOLDER:LUCENE_FOLDER);
 		extraProperties.put("hibernate.search.lucene_version", "LUCENE_CURRENT");
-//		extraProperties.put("hibernate.search.default.worker.execution", "async");
 		return extraProperties;
 	}
 
@@ -163,20 +145,17 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	 */
 	@Bean(autowire = Autowire.BY_TYPE)
 	public IServerInterceptor responseHighlighterInterceptor() {
-		ResponseHighlighterInterceptor retVal = new ResponseHighlighterInterceptor();
-		return retVal;
+		return new ResponseHighlighterInterceptor();
 	}
 
 	@Bean(autowire = Autowire.BY_TYPE)
 	public IServerInterceptor subscriptionSecurityInterceptor() {
-		SubscriptionsRequireManualActivationInterceptorDstu3 retVal = new SubscriptionsRequireManualActivationInterceptorDstu3();
-		return retVal;
+		return new SubscriptionsRequireManualActivationInterceptorDstu3();
 	}
 
 	@Bean(autowire = Autowire.BY_TYPE)
 	public IServerInterceptor subscriptionKeyCloakInterceptor() {
-		KeyCloakInterceptor retVal = new KeyCloakInterceptor();
-		return retVal;
+		return new KeyCloakInterceptor();
 	}
 
 	@Bean()

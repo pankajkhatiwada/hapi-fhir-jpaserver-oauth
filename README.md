@@ -1,6 +1,29 @@
+# Hapi-fhir-jpaserver-oauth
+
 ## Description
 
-Hapi-fhir-jpaserver-example-mysql-oauth includes as the name states support for mySQL and OAuth. 
+Hapi-fhir-jpaserver-oauth is HAPI v 3.3.0-SNAPSHOT with support for mySQL and OAuth. 
+
+## Environment variables
+
+Some environment variables must be set prior to the execution:
+
+	DB_VENDOR=
+	MYSQL_URL=
+	MYSQL_USER=
+	MYSQL_PASS=
+	LUCENE_FOLDER=/var/lib/tomcat8/webapps/hapi/indexes
+	OAUTH_ENABLE=true or false
+	OAUTH_URL=
+
+## Running hapi-fhir-jpaserver-example in a Docker container
+
+Execute the `build-docker-image.sh` script to build the docker image. 
+
+Use this command to start the container: 
+  `docker run -d --name hapi-fhir-jpaserver-oauth -p 8080:8080 hapi-fhir/hapi-fhir-jpaserver-oauth -e DB_VENDOR=MYSQL -e MYSQL_URL=XXX -e MYSQL_USER=XXX -e MYSQL_PASS=XXX -e LUCENE_FOLDER=XXX`
+
+Note: with this command data is persisted across container restarts, but not after removal of the container. Use a docker volume mapping on /var/lib/jetty/target to achieve this.
 
 ## Running hapi-fhir-jpaserver-example in Tomcat from IntelliJ
 
@@ -36,17 +59,8 @@ Point your browser (or fiddler, or what have you) to `http://localhost:8080/hapi
 
 You should get an empty bundle back.
 
+## Using ElasticSearch as the search engine instead of the default Apache Lucene
 
-## Running hapi-fhir-jpaserver-example in a Docker container
-
-Execute the `build-docker-image.sh` script to build the docker image. 
-
-Use this command to start the container: 
-  `docker run -d --name hapi-fhir-jpaserver-example -p 8080:8080 hapi-fhir/hapi-fhir-jpaserver-example`
-
-Note: with this command data is persisted across container restarts, but not after removal of the container. Use a docker volume mapping on /var/lib/jetty/target to achieve this.
-
-#### Using ElasticSearch as the search engine instead of the default Apache Lucene
 1. Install ElasticSearch server and the phonetic plugin
     * Download ElasticSearch from https://www.elastic.co/downloads/elasticsearch
     * ```cd {your elasticsearch directory}```
@@ -60,10 +74,11 @@ Note: with this command data is persisted across container restarts, but not aft
     2.0 - 5.6.
     * Please check all the limitations in the reference documentation: https://docs.jboss.org/hibernate/search/5.7/reference/en-US/html_single/#elasticsearch-limitations before use the integration.
 
-#### MySQL configuration
+## MySQL configuration
+
 We follow the recommended [MySQL configuration](https://groups.google.com/forum/#!topic/hapi-fhir/ValHrT3hAj0) including extra jpaProperties to [avoid permission problems with Lucene indexes](https://groups.google.com/forum/#!topic/hapi-fhir/wyh4TEpUuSA) of the default configuration:
 
-1. Add the mysql dependency to the pom:
+1. Dependency in the pom:
 ```
     <dependency>
         <groupId>mysql</groupId>
@@ -81,17 +96,11 @@ We follow the recommended [MySQL configuration](https://groups.google.com/forum/
         try {
             retVal.setDriver(new com.mysql.cj.jdbc.Driver());
         } catch (SQLException e) {
-        // TODO Auto-generated catch block
-          e.printStackTrace();
-        }
-		
-        retVal.setUrl("jdbc:mysql://localhost:3306/dbfhir?useSSL=false&serverTimezone=UTC");
-        retVal.setUsername("fhirman");
-        retVal.setPassword("******");
-        return retVal;
-    }
+        
 ```
+
 * In the JPA properties
+
 ```
     private Properties jpaProperties() {
 
@@ -104,7 +113,8 @@ We follow the recommended [MySQL configuration](https://groups.google.com/forum/
       extraProperties.put("hibernate.search.default.indexBase", "/var/lib/tomcat8/webapps/hapi-fhir-jpaserver-example-mysql-oauth/indexes");
     }
 ```
-#### OAuth2 authorization
+
+## OAuth2 authorization
 
 [OAuth2 authorization in HAPI](http://hapifhir.io/doc_rest_server_security.html#Authorization_Interceptor) is done [via Interceptors](http://hapifhir.io/doc_rest_server_interceptor.html). We reuse the [careconnect implementation](https://github.com/nhsconnect/careconnect-reference-implementation/blob/master/ccri-fhirgatewayhttps/src/main/java/uk/nhs/careconnect/ri/gateway/https/oauth2/OAuthTokenUtil.java) creating a new IServerInterceptor in FhirConfig that is automatically registered when launching the server:
 ```
@@ -116,6 +126,7 @@ We follow the recommended [MySQL configuration](https://groups.google.com/forum/
 ```
 
 We use as IdM [KeyCloak](http://www.keycloak.org/). Provision scripts to run [KeyCloak and HAPI behind a reverse proxy](https://github.com/Codingpedia/codingmarks-api/wiki/Keycloak-Setup-for-Production) are provided [here](https://github.com/AriHealth/puppet-ari). The REST API which provides login and isValid authorization are also provided [here](https://github.com/AriHealth/keycloak-auth). Last thing is to configure the [HAPI client including the authorization token in the header](http://hapifhir.io/doc_rest_client_interceptor.html):
+
 ```
     BearerTokenAuthInterceptor authInterceptor = new BearerTokenAuthInterceptor(token);
 

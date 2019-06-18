@@ -67,14 +67,14 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	private Properties jpaProperties() {
 		Properties extraProperties = new Properties();
 		extraProperties.put("hibernate.dialect", org.hibernate.dialect.DerbyTenSevenDialect.class.getName());
-		extraProperties.put("hibernate.format_sql", "true");
-		extraProperties.put("hibernate.show_sql", "false");
+		extraProperties.put("hibernate.format_sql", Boolean.TRUE.toString());
+		extraProperties.put("hibernate.show_sql", Boolean.FALSE.toString());
 		extraProperties.put("hibernate.hbm2ddl.auto", "update");
 		extraProperties.put("hibernate.jdbc.batch_size", "20");
-		extraProperties.put("hibernate.cache.use_query_cache", "false");
-		extraProperties.put("hibernate.cache.use_second_level_cache", "false");
-		extraProperties.put("hibernate.cache.use_structured_entries", "false");
-		extraProperties.put("hibernate.cache.use_minimal_puts", "false");
+		extraProperties.put("hibernate.cache.use_query_cache", Boolean.FALSE.toString());
+		extraProperties.put("hibernate.cache.use_second_level_cache", Boolean.FALSE.toString());
+		extraProperties.put("hibernate.cache.use_structured_entries", Boolean.FALSE.toString());
+		extraProperties.put("hibernate.cache.use_minimal_puts", Boolean.FALSE.toString());
 
 		// the belowing properties are used for ElasticSearch integration
 		extraProperties.put(ElasticsearchEnvironment.ANALYZER_DEFINITION_PROVIDER, ElasticsearchMappingProvider.class.getName());
@@ -91,14 +91,12 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	 */
 	@Bean(autowire = Autowire.BY_TYPE)
 	public IServerInterceptor responseHighlighterInterceptor() {
-		ResponseHighlighterInterceptor retVal = new ResponseHighlighterInterceptor();
-		return retVal;
+		return new ResponseHighlighterInterceptor();
 	}
 
 	@Bean(autowire = Autowire.BY_TYPE)
 	public IServerInterceptor subscriptionSecurityInterceptor() {
-		SubscriptionsRequireManualActivationInterceptorDstu3 retVal = new SubscriptionsRequireManualActivationInterceptorDstu3();
-		return retVal;
+		return new SubscriptionsRequireManualActivationInterceptorDstu3();
 	}
 
 	@Bean()

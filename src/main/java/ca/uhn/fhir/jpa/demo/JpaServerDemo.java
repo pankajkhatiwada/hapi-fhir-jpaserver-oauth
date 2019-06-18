@@ -3,8 +3,6 @@ package ca.uhn.fhir.jpa.demo;
 
 import java.util.Collection;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 
@@ -32,13 +30,11 @@ public class JpaServerDemo extends RestfulServer {
 
 	private static final long serialVersionUID = 1L;
 
-	private WebApplicationContext myAppCtx;
-
 	@SuppressWarnings("unchecked")
 	@Override
 	protected void initialize() throws ServletException {
 		super.initialize();
-
+		WebApplicationContext myAppCtx;
 		/* 
 		 * We want to support FHIR DSTU2 format. This means that the server
 		 * will use the DSTU2 bundle format and other DSTU2 encoding changes.
@@ -135,25 +131,6 @@ public class JpaServerDemo extends RestfulServer {
 		for (IServerInterceptor interceptor : interceptorBeans) {
 			this.registerInterceptor(interceptor);
 		}
-
-		/*
-		 * If you are hosting this server at a specific DNS name, the server will try to 
-		 * figure out the FHIR base URL based on what the web container tells it, but
-		 * this doesn't always work. If you are setting links in your search bundles that
-		 * just refer to "localhost", you might want to use a server address strategy:
-		 */
-		//setServerAddressStrategy(new HardcodedServerAddressStrategy("http://mydomain.com/fhir/baseDstu2"));
-		
-		/*
-		 * If you are using DSTU3+, you may want to add a terminology uploader, which allows 
-		 * uploading of external terminologies such as Snomed CT. Note that this uploader
-		 * does not have any security attached (any anonymous user may use it by default)
-		 * so it is a potential security vulnerability. Consider using an AuthorizationInterceptor
-		 * with this feature.
-		 */
-		//if (fhirVersion == FhirVersionEnum.DSTU3) {
-		//	 registerProvider(myAppCtx.getBean(TerminologyUploaderProviderDstu3.class));
-		//}
 	}
 
 }

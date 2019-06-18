@@ -28,7 +28,6 @@ public class ExampleServerIT {
 	private static Server ourServer;
 	private static String ourServerBase;
 
-	// TODO provide as integration tests
 	// @Ignore("Test is ignored because we need to deploy the MySQL server")
 	@Test
 	public void testCreateAndRead() throws IOException {

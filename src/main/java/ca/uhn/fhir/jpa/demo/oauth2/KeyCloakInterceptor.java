@@ -26,10 +26,6 @@
 
 package ca.uhn.fhir.jpa.demo.oauth2;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -41,43 +37,29 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 public class KeyCloakInterceptor extends InterceptorAdapter {
 	private static final Logger logger = LoggerFactory.getLogger(KeyCloakInterceptor.class);
 	
-	// Const from properties
-	private String OAUTH_ENABLE;
-	private String OAUTH_URL;
-	private String BEARER = "BEARER ";
+	// Const from environment variables
+	private static final String OAUTH_ENABLE = System.getenv("OAUTH_ENABLE");
+	private static final String OAUTH_URL = System.getenv("OAUTH_URL");
+	
+	private static final String BEARER = "BEARER ";
 
 	@Override
     public boolean incomingRequestPreProcessed(HttpServletRequest theRequest, HttpServletResponse theResponse) {
 
         String resourcePath = theRequest.getPathInfo();
-        logger.info("Accessing Resource" + resourcePath);
-        /* if (excludedPaths.contains(resourcePath)){
-            logger.info("Accessing unprotected resource" + resourcePath);
-            return true;
-        } */
-
-		/**
-		 * Read the environment variables 
-		 */
+        logger.info("Accessing Resource: {}", resourcePath);
 		
-		OAUTH_ENABLE =  System.getenv("OAUTH_ENABLE");
-		OAUTH_URL =  System.getenv("OAUTH_URL");
-		
-		if (OAUTH_ENABLE == null) 
-			OAUTH_ENABLE = "false";
-
-		if (OAUTH_URL == null)
-			OAUTH_URL = "http://localhost:8081/user";
-		
-		// To easily enable/disable OAuth authentication
-        if (Boolean.valueOf(OAUTH_ENABLE) == false)
-        	return true;
+        // OAuth authentication is disabled if the environment variable is set to false or not set
+		if (OAUTH_ENABLE == null || !Boolean.valueOf(OAUTH_ENABLE))  {
+			return true;
+		}
         
 		String authHeader = theRequest.getHeader(HttpHeaders.AUTHORIZATION);
         if (authHeader == null){
@@ -95,31 +77,16 @@ public class KeyCloakInterceptor extends InterceptorAdapter {
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", authToken);
 
-        HttpEntity<String> entity = new HttpEntity<String>(headers);
+        HttpEntity<String> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(
-        		OAUTH_URL, HttpMethod.GET, entity, String.class);
-        // AccessToken oauthToken = response.getBody();        
+        ResponseEntity<String> response = restTemplate.exchange(OAUTH_URL, HttpMethod.GET, entity, String.class);
         
-   		if (response.getStatusCode().value() != 200) {
+   		if (response.getStatusCode().value() != HttpStatus.OK.value()) {
             logger.warn("OAuth2 Authentication failure. Invalid OAuth Token supplied in Authorization Header on Request.");
             throw new AuthenticationException("Unauthorised access to protected resource");
         }
 
-        // Check that the OAuth Token has not expired
-        /* if (oAuthToken.isExpired()){
-            logger.warn("OAuth2 Authentication failure due to expired token");
-            throw new AuthenticationException("OAuth2 Authentication Token has expired.");
-        } */
-
-        // Check that the Scopes on the Token allow access to the specified resource
-        /* String resourceName = extractResourceName(resourcePath);
-        if (!allowedAccess(resourceName, theRequest.getMethod(), oAuthToken)){
-            logger.warn("OAuth2 Authentication failed due to insufficient access rights: ");
-            throw new ForbiddenOperationException(String.format("Insufficient Access Rights to access %s.", resourceName));
-        } */
-
-        logger.debug("Authenticated Access to " + resourcePath);
+        logger.debug("Authenticated Access to {}", resourcePath);
         return true;
     }
 }

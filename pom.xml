@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ca.uhn.hapi.fhir</groupId>
 	<artifactId>hapi-fhir-jpaserver-oauth</artifactId>
-	<version>3.3.0-SNAPSHOT</version>
+	<version>3.8.0-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>HAPI FHIR MySQL OAuth JPA Server - Example</name>
 
@@ -18,15 +18,16 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<!-- Dependency Versions -->
-		<derby_version>10.14.1.0</derby_version>
-		<jaxb_api_version>2.3.0</jaxb_api_version>
-		<jetty_version>9.4.8.v20171121</jetty_version>
+		<derby_version>10.14.2.0</derby_version>
+		<jaxb_api_version>2.3.1</jaxb_api_version>
+		<jetty_version>9.4.14.v20181114</jetty_version>
 		<phloc_schematron_version>2.7.1</phloc_schematron_version>
-		<spring_version>5.0.3.RELEASE</spring_version>
-		<thymeleaf-version>3.0.9.RELEASE</thymeleaf-version>
+		<spring_version>5.1.8.RELEASE</spring_version>
+		<thymeleaf-version>3.0.11.RELEASE</thymeleaf-version>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ebay_cors_filter_version>1.0.1</ebay_cors_filter_version>
-		<hapi.version>3.3.0-SNAPSHOT</hapi.version>
+		<commons_dbcp2>2.6.0</commons_dbcp2>
+		<hapi.version>3.8.0</hapi.version>
 
 		<!-- Unit and integration tests management -->
 		<skip.unit.tests>false</skip.unit.tests>
@@ -92,7 +93,8 @@
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-base</artifactId>
-			<version>${hapi.version}</version>
+<!--			<version>${hapi.version}</version> -->
+			<version>3.8.0-SNAPSHOT</version>
 		</dependency>
 
 		<!-- At least one "structures" JAR must also be included -->
@@ -183,7 +185,7 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-dbcp2</artifactId>
-			<version>2.1.1</version>
+			<version>${commons_dbcp2}</version>
 		</dependency>
 
 		<!-- This example does not use Derby embedded database. We skip the dependencies. -->

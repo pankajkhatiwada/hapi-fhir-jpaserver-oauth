@@ -89,7 +89,7 @@ public class FhirServerConfigDstu2 extends BaseJavaConfigDstu2 {
 	/**
 	 * Do some fancy logging to create a nice access log that has details about each incoming request.
 	 */
-	public IServerInterceptor loggingInterceptor() {
+	public LoggingInterceptor loggingInterceptor() {
 		LoggingInterceptor retVal = new LoggingInterceptor();
 		retVal.setLoggerName("fhirtest.access");
 		retVal.setMessageFormat(
@@ -103,7 +103,7 @@ public class FhirServerConfigDstu2 extends BaseJavaConfigDstu2 {
 	 * This interceptor adds some pretty syntax highlighting in responses when a browser is detected
 	 */
 	@Bean(autowire = Autowire.BY_TYPE)
-	public IServerInterceptor responseHighlighterInterceptor() {
+	public ResponseHighlighterInterceptor responseHighlighterInterceptor() {
 		return new ResponseHighlighterInterceptor();
 	}
 

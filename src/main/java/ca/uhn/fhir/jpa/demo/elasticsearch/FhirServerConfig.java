@@ -77,7 +77,7 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 		extraProperties.put("hibernate.cache.use_minimal_puts", Boolean.FALSE.toString());
 
 		// the belowing properties are used for ElasticSearch integration
-		extraProperties.put(ElasticsearchEnvironment.ANALYZER_DEFINITION_PROVIDER, ElasticsearchMappingProvider.class.getName());
+		extraProperties.put(ElasticsearchEnvironment.ANALYSIS_DEFINITION_PROVIDER, ElasticsearchMappingProvider.class.getName());
 		extraProperties.put("hibernate.search.default.indexmanager", "elasticsearch");
 		extraProperties.put("hibernate.search.default.elasticsearch.host", "http://127.0.0.1:9200");
 		extraProperties.put("hibernate.search.default.elasticsearch.index_schema_management_strategy", "CREATE");
@@ -90,7 +90,7 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	 * This interceptor adds some pretty syntax highlighting in responses when a browser is detected
 	 */
 	@Bean(autowire = Autowire.BY_TYPE)
-	public IServerInterceptor responseHighlighterInterceptor() {
+	public ResponseHighlighterInterceptor responseHighlighterInterceptor() {
 		return new ResponseHighlighterInterceptor();
 	}
 

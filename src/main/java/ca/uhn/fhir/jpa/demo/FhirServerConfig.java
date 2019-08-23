@@ -4,11 +4,13 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 import javax.persistence.EntityManagerFactory;
-import javax.sql.DataSource;
 
+import ca.uhn.fhir.jpa.model.entity.ModelConfig;
 import ca.uhn.fhir.jpa.search.LuceneSearchMappingFactory;
+import ca.uhn.fhir.jpa.util.DerbyTenSevenHapiFhirDialect;
 import org.apache.commons.dbcp2.BasicDataSource;
-import org.hibernate.jpa.HibernatePersistenceProvider;
+// import org.hl7.fhir.dstu2.model.Subscription;
+import org.hl7.fhir.instance.model.Subscription.SubscriptionChannelType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -35,7 +37,7 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FhirServerConfig.class);
 
 	// Const from properties
-	private static final String DB_VENDOR = System.getenv("DB_VENDOR");
+	private static String DB_VENDOR = System.getenv("DB_VENDOR");
 	private static final String MYSQL_URL = System.getenv("MYSQL_URL");
 	private static final String MYSQL_USER = System.getenv("MYSQL_USER");
 	private static final String MYSQL_PASS = System.getenv("MYSQL_PASS");
@@ -45,8 +47,6 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	private static final String MYSQL_DB_VENDOR = "MYSQL";
 	private static final String DERBY_DB_VENDOR = "DERBY";
 
-	
-
 	/**
 	 * Configure FHIR properties around the the JPA server via this bean
 	 */
@@ -54,8 +54,17 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	public DaoConfig daoConfig() {
 		DaoConfig retVal = new DaoConfig();
 		retVal.setAllowMultipleDelete(true);
+		retVal.addSupportedSubscriptionType(SubscriptionChannelType.WEBSOCKET);
+		retVal.addSupportedSubscriptionType(SubscriptionChannelType.RESTHOOK);
+		retVal.addSupportedSubscriptionType(SubscriptionChannelType.EMAIL);
+		retVal.setSubscriptionMatchingEnabled(true);
 		return retVal;
 	}
+
+	@Bean
+	public ModelConfig modelConfig() {
+		return daoConfig().getModelConfig();
+	} 
 
 	/**
 	 * The following bean configures the database connection. 
@@ -66,8 +75,11 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	 * @throws SQLException 
 	 */
 	@Bean(destroyMethod = "close")
-	public DataSource dataSource() {
-		try(BasicDataSource retVal = new BasicDataSource()) {
+	public BasicDataSource dataSource() {
+		BasicDataSource retVal = new BasicDataSource();
+		try {
+			if (DB_VENDOR == null)
+				DB_VENDOR = DERBY_DB_VENDOR;
 			switch (DB_VENDOR) {
 				case MYSQL_DB_VENDOR:
 					retVal.setDriver(new com.mysql.jdbc.Driver());
@@ -87,15 +99,14 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 			LOGGER.error("Exception in database connection", sqlex);
 			return null;
 		}
-	}
+	} 
 
+	@Override
 	@Bean()
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-		LocalContainerEntityManagerFactoryBean retVal = new LocalContainerEntityManagerFactoryBean();
+		LocalContainerEntityManagerFactoryBean retVal = super.entityManagerFactory();
 		retVal.setPersistenceUnitName("HAPI_PU");
 		retVal.setDataSource(dataSource());
-		retVal.setPackagesToScan("ca.uhn.fhir.jpa.entity");
-		retVal.setPersistenceProvider(new HibernatePersistenceProvider());
 		retVal.setJpaProperties(jpaProperties());
 		return retVal;
 	}
@@ -104,13 +115,15 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 		Properties extraProperties = new Properties();
 		LOGGER.info("DB_VENDOR: {}", DB_VENDOR);
 
+		if (DB_VENDOR == null)
+			DB_VENDOR = DERBY_DB_VENDOR;
 		switch (DB_VENDOR) {
 			case MYSQL_DB_VENDOR:
 				extraProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
 				break;
 			case DERBY_DB_VENDOR:
 			default:
-				extraProperties.put("hibernate.dialect", org.hibernate.dialect.DerbyTenSevenDialect.class.getName());
+				extraProperties.put("hibernate.dialect", DerbyTenSevenHapiFhirDialect.class.getName());
 		}
 		extraProperties.put("hibernate.format_sql", Boolean.TRUE.toString());
 		extraProperties.put("hibernate.show_sql", Boolean.FALSE.toString());
@@ -125,12 +138,12 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 		extraProperties.put("hibernate.search.default.indexBase", LUCENE_FOLDER == null? DEFAULT_LUCENE_FOLDER:LUCENE_FOLDER);
 		extraProperties.put("hibernate.search.lucene_version", "LUCENE_CURRENT");
 		return extraProperties;
-	}
+	} 
 
 	/**
 	 * Do some fancy logging to create a nice access log that has details about each incoming request.
 	 */
-	public IServerInterceptor loggingInterceptor() {
+	public LoggingInterceptor loggingInterceptor() {
 		LoggingInterceptor retVal = new LoggingInterceptor();
 		retVal.setLoggerName("fhirtest.access");
 		retVal.setMessageFormat(
@@ -144,7 +157,7 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	 * This interceptor adds some pretty syntax highlighting in responses when a browser is detected
 	 */
 	@Bean(autowire = Autowire.BY_TYPE)
-	public IServerInterceptor responseHighlighterInterceptor() {
+	public ResponseHighlighterInterceptor responseHighlighterInterceptor() {
 		return new ResponseHighlighterInterceptor();
 	}
 

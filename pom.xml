@@ -1,11 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+
 	<groupId>ca.uhn.hapi.fhir</groupId>
 	<artifactId>hapi-fhir-jpaserver-oauth</artifactId>
 	<version>3.8.0-SNAPSHOT</version>
 	<packaging>war</packaging>
-	<name>HAPI FHIR MySQL OAuth JPA Server - Example</name>
+
+	<name>hapi-fhir-jpaserver-oauth</name>
+	<description>HAPI FHIR MySQL OAuth JPA Server - Example</description>
 
 	<!-- Note: HAPI projects use the "hapi-fhir" POM as their base to provide 
 		easy management. You do not need to use this in your own projects, so the 
@@ -16,6 +19,7 @@
 		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ss'Z'</maven.build.timestamp.format>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- Dependency Versions -->
 		<derby_version>10.14.2.0</derby_version>
@@ -24,19 +28,19 @@
 		<phloc_schematron_version>2.7.1</phloc_schematron_version>
 		<spring_version>5.1.8.RELEASE</spring_version>
 		<thymeleaf-version>3.0.11.RELEASE</thymeleaf-version>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<ebay_cors_filter_version>1.0.1</ebay_cors_filter_version>
 		<commons_dbcp2>2.6.0</commons_dbcp2>
 		<hapi.version>3.8.0</hapi.version>
+
+		<!-- javadoc and scm configuration for the CI -->
+		<maven.javadoc.failOnError>false</maven.javadoc.failOnError>
+		<sonar.scm.disabled>true</sonar.scm.disabled>
+		<project.scm.id>github</project.scm.id>
 
 		<!-- Unit and integration tests management -->
 		<skip.unit.tests>false</skip.unit.tests>
 		<skip.integration.tests>true</skip.integration.tests>
 	</properties>
-
-	<!-- <parent> <groupId>ca.uhn.hapi.fhir</groupId> <artifactId>hapi-fhir</artifactId> 
-		<version>3.3.0-SNAPSHOT</version> <relativePath>../hapi-fhir/pom.xml</relativePath> 
-		</parent> -->
 
 	<repositories>
 		<repository>
@@ -62,14 +66,36 @@
 				<skip.unit.tests>true</skip.unit.tests>
 			</properties>
 		</profile>
-	</profiles>
+	</profiles>  
+
+	<scm>
+		<url>https://github.com/AriHealth/hapi-fhir-jpaserver-oauth.git</url>
+		<connection>scm:git:https://github.com/AriHealth/hapi-fhir-jpaserver-oauth.git</connection>
+		<developerConnection>scm:git:https://github.com/AriHealth/hapi-fhir-jpaserver-oauth.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>nexus-releases</id>
+			<url>https://nexus.atosresearch.eu/repository/maven-releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<url>https://nexus.atosresearch.eu/repository/maven-snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
 
 	<dependencies>
+	
+		<!-- JUnit -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 		</dependency>
+		
+		<!-- Jetty -->
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
 			<artifactId>websocket-api</artifactId>
@@ -81,20 +107,11 @@
 			<version>${jetty_version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>6.0.5</version>
-		</dependency>
-		<!-- <dependency> <groupId>org.aspectj</groupId> <artifactId>aspectjweaver</artifactId> 
-			<version>1.8.9</version> </dependency> -->
-
 		<!-- This dependency includes the core HAPI-FHIR classes -->
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-base</artifactId>
-<!--			<version>${hapi.version}</version> -->
-			<version>3.8.0-SNAPSHOT</version>
+			<version>${hapi.version}</version> 
 		</dependency>
 
 		<!-- At least one "structures" JAR must also be included -->
@@ -228,7 +245,7 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>[9.4.11.v20180605,)</version>
+			<version>${jetty_version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -264,6 +281,13 @@
 			<scope>provided</scope>
 		</dependency>
 
+		<!-- MySQL -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>6.0.5</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -285,6 +309,27 @@
 						</webApp>
 					</configuration>
 				</plugin>
+
+				<plugin>
+					<groupId>se.bjurr.gitchangelog</groupId>
+					<artifactId>git-changelog-maven-plugin</artifactId>
+					<version>1.60</version>
+					<executions>
+						<execution>
+							<id>generateChangelog</id>
+							<phase>generate-sources</phase>
+							<goals>
+								<goal>git-changelog</goal>
+							</goals>
+							<configuration>
+								<gitHubToken>${GITHUB_API_TOKEN}</gitHubToken>
+								<templateFile>changelog.mustache</templateFile>
+								<settingsFile>changelog.json</settingsFile>
+								<file>CHANGELOG.md</file>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
 			</plugins>
 		</pluginManagement>
 
@@ -293,10 +338,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
 			</plugin>
 
 			<!-- The configuration here tells the WAR plugin to include the FHIR Tester 
@@ -323,13 +364,13 @@
 
 			<!-- This plugin is just a part of the HAPI internal build process, you 
 				do not need to incude it in your own projects -->
-			<plugin>
+			<!-- <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
 				<configuration>
 					<skip>true</skip>
 				</configuration>
-			</plugin>
+			</plugin>  -->
 
 			<!-- Add integration tests -->
 			<!-- Skip unit testing -->
@@ -363,8 +404,64 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin> 
+
+			<plugin>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<tagNameFormat>@{version}</tagNameFormat>
+					<autoVersionSubmodules>true</autoVersionSubmodules>
+					<pushChanges>false</pushChanges>
+					<goals>deploy</goals>
+					<checkModificationExcludes>
+						<checkModificationExclude>CHANGELOG.md</checkModificationExclude>
+						<checkModificationExclude>.travis/prepare.sh</checkModificationExclude>
+						<checkModificationExclude>.travis/push.sh</checkModificationExclude>
+					</checkModificationExcludes>
+				</configuration>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.scm</groupId>
+						<artifactId>maven-scm-api</artifactId>
+						<version>1.9.5</version>
+					</dependency>
+					<dependency>
+						<groupId>org.apache.maven.scm</groupId>
+						<artifactId>maven-scm-provider-gitexe</artifactId>
+						<version>1.9.5</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>versions-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.2</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
 		</plugins>
 	</build>

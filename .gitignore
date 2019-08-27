@@ -88,8 +88,6 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 
-
-
 ### Eclipse ###
 *.pydevproject
 .metadata
@@ -128,3 +126,5 @@ local.properties
 # TeXlipse plugin
 .texlipse
 
+# Okhttpcache
+.okhttpcache/

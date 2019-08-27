@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -24,7 +25,7 @@
 		<!-- Dependency Versions -->
 		<derby_version>10.14.2.0</derby_version>
 		<jaxb_api_version>2.3.1</jaxb_api_version>
-		<jetty_version>9.4.14.v20181114</jetty_version>
+		<jetty_version>9.4.17.v20190418</jetty_version>
 		<phloc_schematron_version>2.7.1</phloc_schematron_version>
 		<spring_version>5.1.8.RELEASE</spring_version>
 		<thymeleaf-version>3.0.11.RELEASE</thymeleaf-version>
@@ -51,7 +52,7 @@
 			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
 		</repository>
 	</repositories>
-		
+
 	<profiles>
 		<profile>
 			<id>ut</id>
@@ -66,7 +67,7 @@
 				<skip.unit.tests>true</skip.unit.tests>
 			</properties>
 		</profile>
-	</profiles>  
+	</profiles>
 
 	<scm>
 		<url>https://github.com/AriHealth/hapi-fhir-jpaserver-oauth.git</url>
@@ -87,14 +88,14 @@
 	</distributionManagement>
 
 	<dependencies>
-	
+
 		<!-- JUnit -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>
 		</dependency>
-		
+
 		<!-- Jetty -->
 		<dependency>
 			<groupId>org.eclipse.jetty.websocket</groupId>
@@ -111,7 +112,7 @@
 		<dependency>
 			<groupId>ca.uhn.hapi.fhir</groupId>
 			<artifactId>hapi-fhir-base</artifactId>
-			<version>${hapi.version}</version> 
+			<version>${hapi.version}</version>
 		</dependency>
 
 		<!-- At least one "structures" JAR must also be included -->
@@ -245,7 +246,7 @@
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>${jetty_version}</version>
+			<version>[9.4.17.v20190418,)</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -309,27 +310,6 @@
 						</webApp>
 					</configuration>
 				</plugin>
-
-				<plugin>
-					<groupId>se.bjurr.gitchangelog</groupId>
-					<artifactId>git-changelog-maven-plugin</artifactId>
-					<version>1.60</version>
-					<executions>
-						<execution>
-							<id>generateChangelog</id>
-							<phase>generate-sources</phase>
-							<goals>
-								<goal>git-changelog</goal>
-							</goals>
-							<configuration>
-								<gitHubToken>${GITHUB_API_TOKEN}</gitHubToken>
-								<templateFile>changelog.mustache</templateFile>
-								<settingsFile>changelog.json</settingsFile>
-								<file>CHANGELOG.md</file>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
 			</plugins>
 		</pluginManagement>
 
@@ -338,6 +318,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.8.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
 			</plugin>
 
 			<!-- The configuration here tells the WAR plugin to include the FHIR Tester 
@@ -364,13 +349,8 @@
 
 			<!-- This plugin is just a part of the HAPI internal build process, you 
 				do not need to incude it in your own projects -->
-			<!-- <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
-			</plugin>  -->
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-deploy-plugin</artifactId> 
+				<configuration> <skip>true</skip> </configuration> </plugin> -->
 
 			<!-- Add integration tests -->
 			<!-- Skip unit testing -->
@@ -404,7 +384,7 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin> 
+			</plugin>
 
 			<plugin>
 				<artifactId>maven-release-plugin</artifactId>
@@ -433,19 +413,10 @@
 				</dependencies>
 			</plugin>
 
-			<plugin>
+			<!-- <plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
+			</plugin> --> 
 
 			<plugin>
 				<groupId>org.jacoco</groupId>
@@ -467,6 +438,26 @@
 				</executions>
 			</plugin>
 
+			<plugin>
+				<groupId>se.bjurr.gitchangelog</groupId>
+				<artifactId>git-changelog-maven-plugin</artifactId>
+				<version>1.60</version>
+				<executions>
+					<execution>
+						<id>generateChangelog</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>git-changelog</goal>
+						</goals>
+						<configuration>
+							<gitHubToken>${GITHUB_API_TOKEN}</gitHubToken>
+							<templateFile>changelog.mustache</templateFile>
+							<settingsFile>changelog.json</settingsFile>
+							<file>CHANGELOG.md</file>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 

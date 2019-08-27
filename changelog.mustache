@@ -8,23 +8,10 @@ Hapi-fhir-jpaserver-oauth is HAPI version 3.8.0 with support for mySQL and OAuth
 ## {{name}}
  {{#issues}}
   {{#hasIssue}}
-
-#### GitHub {{issue}} {{title}} {{#hasLabels}} {{#labels}} *{{.}}* {{/labels}} {{/hasLabels}}
+### {{title}} {{#hasIssueType}} *{{issueType}}* {{/hasIssueType}} {{#hasLabels}} {{#labels}} ``{{.}}`` {{/labels}} {{/hasLabels}}
+* Further information in the Pull Request [{{issue}}]({{link}})
   {{/hasIssue}}
   {{^hasIssue}}
-#### GitHub
   {{/hasIssue}}
-
-  {{#commits}}
-**{{{messageTitle}}}**
-
-{{#messageBodyItems}}
- * {{.}} 
-{{/messageBodyItems}}
-
-[{{hash}}](https://github.com/arihealth/hapi-fhir-jpaserver-oauth/commit/{{hash}}) {{authorName}} *{{commitTime}}*
-
-  {{/commits}}
-
  {{/issues}}
 {{/tags}}

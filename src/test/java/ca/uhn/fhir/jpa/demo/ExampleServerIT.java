@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -28,10 +29,9 @@ public class ExampleServerIT {
 	private static Server ourServer;
 	private static String ourServerBase;
 
-	// @Ignore("Test is ignored because we need to deploy the MySQL server")
 	@Test
 	public void testCreateAndRead() throws IOException {
-		ourLog.info("Base URL is: http://localhost:" + ourPort + "/baseDstu3");
+		ourLog.info("Base URL is: http://localhost:" + ourPort + "/hapi/baseDstu3");
 		String methodName = "testCreateResourceConditional";
 
 		Patient pt = new Patient();
@@ -49,13 +49,7 @@ public class ExampleServerIT {
 
 	@BeforeClass
 	public static void beforeClass() throws Exception {
-		/*
-		 * This runs under maven, and I'm not sure how else to figure out the target directory from code..
-		 */
-		String path = ExampleServerIT.class.getClassLoader().getResource(".keep_hapi-fhir-jpaserver-example").getPath();
-		path = new File(path).getParent();
-		path = new File(path).getParent();
-		path = new File(path).getParent();
+		String path = Paths.get("").toAbsolutePath().toString();
 
 		ourLog.info("Project base path is: {}", path);
 
@@ -65,9 +59,9 @@ public class ExampleServerIT {
 		ourServer = new Server(ourPort);
 
 		WebAppContext webAppContext = new WebAppContext();
-		webAppContext.setContextPath("/");
+		webAppContext.setContextPath("/hapi");
 		webAppContext.setDescriptor(path + "/src/main/webapp/WEB-INF/web.xml");
-		webAppContext.setResourceBase(path + "/target/hapi-fhir-jpaserver-example");
+		webAppContext.setResourceBase(path + "/target/hapi-fhir-jpaserver-oauth");
 		webAppContext.setParentLoaderPriority(true);
 
 		ourServer.setHandler(webAppContext);
@@ -75,7 +69,7 @@ public class ExampleServerIT {
 
 		ourCtx.getRestfulClientFactory().setServerValidationMode(ServerValidationModeEnum.NEVER);
 		ourCtx.getRestfulClientFactory().setSocketTimeout(1200 * 1000);
-		ourServerBase = "http://localhost:" + ourPort + "/baseDstu3";
+		ourServerBase = "http://localhost:" + ourPort + "/hapi/baseDstu3";
 		ourClient = ourCtx.newRestfulGenericClient(ourServerBase);
 		ourClient.registerInterceptor(new LoggingInterceptor(true));
 

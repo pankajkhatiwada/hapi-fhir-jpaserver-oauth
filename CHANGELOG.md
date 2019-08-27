@@ -1,0 +1,6 @@
+# Hapi-fhir-jpaserver-oauth
+
+## Description
+
+Hapi-fhir-jpaserver-oauth is HAPI version 3.8.0 with support for mySQL and OAuth. 
+

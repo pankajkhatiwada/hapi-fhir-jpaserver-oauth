@@ -1,8 +1,10 @@
 # Hapi-fhir-jpaserver-oauth
 
+[![Build Status](https://travis-ci.org/AriHealth/hapi-fhir-jpaserver-oauth.svg?branch=master)](https://travis-ci.org/AriHealth/hapi-fhir-jpaserver-oauth) [![codecov.io](https://codecov.io/gh/AriHealth/hapi-fhir-jpaserver-oauth/branch/master/graphs/badge.svg)](http://codecov.io/gh/AriHealth/hapi-fhir-jpaserver-oauth)
+
 ## Description
 
-Hapi-fhir-jpaserver-oauth is HAPI v 3.3.0-SNAPSHOT with support for mySQL and OAuth. 
+Hapi-fhir-jpaserver-oauth is HAPI v 3.8.0-SNAPSHOT with support for mySQL and OAuth. 
 
 ## Environment variables
 
@@ -135,3 +137,10 @@ We use as IdM [KeyCloak](http://www.keycloak.org/). Provision scripts to run [Ke
     // Register the interceptor with your client (either style)
     client.registerInterceptor(authInterceptor);
 ```
+
+
+## License
+
+Apache 2.0
+
+By downloading this software, the downloader agrees with the specified terms and conditions of the License Agreement and the particularities of the license provided.

@@ -24,7 +24,7 @@
  * Interceptor which checks the authenticity of the KeyCloak token in the header
  */
 
-package ca.uhn.fhir.jpa.demo.oauth2;
+package net.atos.ari.cdr.starter.oauth2;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

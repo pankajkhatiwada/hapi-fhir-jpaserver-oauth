@@ -25,7 +25,7 @@
  * Integration test interface
  */
 
-package ca.uhn.fhir.jpa.demo;
+package net.atos.ari.cdr.starter;
 
 public interface IntegrationTest {
 

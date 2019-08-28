@@ -1,4 +1,4 @@
-package ca.uhn.fhir.jpa.demo;
+package net.atos.ari.cdr.starter;
 
 import java.io.IOException;
 import java.net.ServerSocket;

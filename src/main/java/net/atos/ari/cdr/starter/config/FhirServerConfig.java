@@ -1,4 +1,4 @@
-package ca.uhn.fhir.jpa.demo;
+package net.atos.ari.cdr.starter.config;
 
 import java.sql.SQLException;
 import java.util.Properties;
@@ -22,11 +22,11 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import ca.uhn.fhir.jpa.config.BaseJavaConfigDstu3;
 import ca.uhn.fhir.jpa.dao.DaoConfig;
-import ca.uhn.fhir.jpa.demo.oauth2.KeyCloakInterceptor;
 import ca.uhn.fhir.jpa.util.SubscriptionsRequireManualActivationInterceptorDstu3;
 import ca.uhn.fhir.rest.server.interceptor.IServerInterceptor;
 import ca.uhn.fhir.rest.server.interceptor.LoggingInterceptor;
 import ca.uhn.fhir.rest.server.interceptor.ResponseHighlighterInterceptor;
+import net.atos.ari.cdr.starter.oauth2.KeyCloakInterceptor;
 
 /**
  * This is the primary configuration file for the example server

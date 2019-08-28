@@ -1,0 +1,119 @@
+# === Copyright
+#
+# Copyright (C) 2019  Atos SA Spain. All rights reserved.
+#
+# === License
+#
+# docker-compose.yaml is free software: you can redistribute it and/or modify it under the 
+# terms of the Apache License, Version 2.0 (the License);
+# 
+# http://www.apache.org/licenses/LICENSE-2.0
+# 
+# The software is provided "AS IS", without any warranty of any kind, express or implied,
+# including but not limited to the warranties of merchantability, fitness for a particular
+# purpose and noninfringement, in no event shall the authors or copyright holders be 
+# liable for any claim, damages or other liability, whether in action of contract, tort or
+# otherwise, arising from, out of or in connection with the software or the use or other
+# dealings in the software.
+# 
+# See README file for the full disclaimer information and LICENSE file for full license 
+# information in the project root.
+# 
+# == docker-compose.yml
+#
+# Service composition to deploy HAPI with keycloak and different databases for HAPI
+#
+# === Authors
+#
+# Author	Carlos Cavero
+# 
+
+version: '3'
+
+services:
+# MySQL database for HAPI
+#  mysql:
+#    image: mysql:5.7
+#    container_name: mysql
+#    volumes:
+#      - ${CONFIG_FOLDER}/mysql/data:/var/lib/mysql
+#    environment:
+#      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+#      MYSQL_DATABASE: ${DB_DB}
+#      MYSQL_USER: ${DB_USER}
+#      MYSQL_PASSWORD: ${DB_PASSWORD}
+#    healthcheck:
+#        test: ["CMD-SHELL", "mysqladmin -h 'localhost' -u root -p${DB_ROOT_PASSWORD} ping --silent"]
+#        interval: 30s
+#        timeout: 30s
+#        retries: 3
+#    restart: always
+
+# MariaDB database for HAPI
+  mariadb:
+    image: mariadb/server:10.3
+    container_name: mariadb
+#    volumes:
+#      - ${CONFIG_FOLDER}/mysql/data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DB}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+        test: ["CMD-SHELL", "mysqladmin -h 'localhost' -u root -p${DB_ROOT_PASSWORD} ping --silent"]
+        interval: 30s
+        timeout: 30s
+        retries: 3
+    restart: always
+
+  keycloak:
+    image: jboss/keycloak
+    container_name: keycloak
+    environment:
+      KEYCLOAK_USER: ${KEYCLOAK_USER}
+      KEYCLOAK_PASSWORD: ${KEYCLOAK_PASSWORD}
+    ports:
+      - 9090:8080
+    restart: always
+
+# CDR starter
+  hapi-fhir:
+    container_name: hapi-fhir
+    build: .
+    depends_on:
+      hapi:
+          condition: service_healthy
+    environment:
+       # Specify DB_VENDOR if we want a non default db in Keycloak
+      DB_VENDOR: ${DB_VENDOR}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_DATABASE: ${DB_DB}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASSWORD}
+      OAUTH_URL: ${OAUTH_URL}  
+      OAUTH_ENABLE: ${OAUTH_ENABLE}
+    ports:
+      - 8080:8080
+    depends_on:
+      - keycloak
+      - mariadb
+    restart: always
+
+# Auth service
+  auth:
+    image: ccavero/keycloak-auth:latest
+    container_name: auth
+    depends_on:
+      keycloak:
+          condition: service_healthy
+    environment:
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+    ports:
+      - 8081:8081
+    depends_on:
+      - keycloak
+    restart: always

@@ -6,6 +6,35 @@
 
 Hapi-fhir-jpaserver-oauth is HAPI v 3.8.0-SNAPSHOT with support for mySQL and OAuth. 
 
+## Technology
+
+- Java 11
+- Maven for Java dependency management
+- Jetty
+- Spring Framework 
+
+## Functionalities
+
+- Open-source implementation of the FHIR specification in Java based on [HAPI](http://hapifhir.io/).
+
+## How to deploy
+
+Compile and package the project with:
+
+```
+mvn clean install
+```
+
+and deploy with:
+
+```
+mvn jetty:run
+```
+
+Go to your browser and type http://localhost:8080/hapi
+
+If you enable the OAuth capability deploy the [Keycloak OAuth 2.0](https://github.com/AriHealth/keycloak-auth) and dependencies.
+
 ## Environment variables
 
 Some environment variables must be set prior to the execution:
@@ -18,63 +47,19 @@ Some environment variables must be set prior to the execution:
 	OAUTH_ENABLE=true or false
 	OAUTH_URL=
 
-## Running hapi-fhir-jpaserver-example in a Docker container
+## Docker deployment
 
-Execute the `build-docker-image.sh` script to build the docker image. 
+Build the image:
+```
+	docker build -t hapi-fhir/hapi-fhir-cdr .
+```
 
 Use this command to start the container: 
-  `docker run -d --name hapi-fhir-jpaserver-oauth -p 8080:8080 hapi-fhir/hapi-fhir-jpaserver-oauth -e DB_VENDOR=MYSQL -e MYSQL_URL=XXX -e MYSQL_USER=XXX -e MYSQL_PASS=XXX -e LUCENE_FOLDER=XXX`
+```
+	docker run -d --name hapi-fhir-cdr -p 8080:8080 hapi-fhir/hapi-fhir-cdr -e DB_VENDOR=MYSQL -e MYSQL_URL=XXX -e MYSQL_USER=XXX -e MYSQL_PASS=XXX -e LUCENE_FOLDER=XXX
+```
 
-Note: with this command data is persisted across container restarts, but not after removal of the container. Use a docker volume mapping on /var/lib/jetty/target to achieve this.
-
-## Running hapi-fhir-jpaserver-example in Tomcat from IntelliJ
-
-Install Tomcat.
-
-Make sure you have Tomcat set up in IntelliJ.
-
-- File->Settings->Build, Execution, Deployment->Application Servers
-- Click +
-- Select "Tomcat Server"
-- Enter the path to your tomcat deployment for both Tomcat Home (IntelliJ will fill in base directory for you)
-
-Add a Run Configuration for running hapi-fhir-jpaserver-example under Tomcat
-
-- Run->Edit Configurations
-- Click the green +
-- Select Tomcat Server, Local
-- Change the name to whatever you wish
-- Uncheck the "After launch" checkbox
-- On the "Deployment" tab, click the green +
-- Select "Artifact"
-- Select "hapi-fhir-jpaserver-example:war" 
-- In "Application context" type /hapi
-
-Run the configuration.
-
-- You should now have an "Application Servers" in the list of windows at the bottom.
-- Click it.
-- Select your server, and click the green triangle (or the bug if you want to debug)
-- Wait for the console output to stop
-
-Point your browser (or fiddler, or what have you) to `http://localhost:8080/hapi/base/Patient`
-
-You should get an empty bundle back.
-
-## Using ElasticSearch as the search engine instead of the default Apache Lucene
-
-1. Install ElasticSearch server and the phonetic plugin
-    * Download ElasticSearch from https://www.elastic.co/downloads/elasticsearch
-    * ```cd {your elasticsearch directory}```
-    * ```bin/plugin install analysis-phonetic```
-    * start ElasticSearch server: ```./bin/elasticsearch```
-2. Replace configuration in web.xml
-    * replace the configuration class ```ca.uhn.fhir.jpa.demo.FhirServerConfig``` in web.xml by ```ca.uhn.fhir.jpa.demo.elasticsearch.FhirServerConfig```
-3. Start server by runing: ```mvn jetty:run```
-4. Limitations:
-    * Hibernate search are not compatible with all ElasticSearch version. If you are using Hibernate search: 5.6 or 5.7, the compatible ElasticSearch version is 2.0 - 2.4. If you are using Hibernate search: 5.8 or 5.9, the compatible ElasticSearch version is
-    2.0 - 5.6.
-    * Please check all the limitations in the reference documentation: https://docs.jboss.org/hibernate/search/5.7/reference/en-US/html_single/#elasticsearch-limitations before use the integration.
+Note: with this command data is persisted across container restarts, but not after removal of the container. Use a new container for the database with a shared docker volume.
 
 ## MySQL configuration
 

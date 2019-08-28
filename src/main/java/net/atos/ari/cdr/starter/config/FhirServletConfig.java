@@ -1,4 +1,4 @@
-package ca.uhn.fhir.jpa.demo;
+package net.atos.ari.cdr.starter.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +19,7 @@ import ca.uhn.fhir.to.TesterConfig;
  */
 @Configuration
 @Import(FhirTesterMvcConfig.class)
-public class FhirTesterConfig {
+public class FhirServletConfig {
 
 	/**
 	 * This bean tells the testing webpage which servers it should configure itself

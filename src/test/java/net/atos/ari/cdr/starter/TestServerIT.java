@@ -1,4 +1,4 @@
-package ca.uhn.fhir.jpa.demo;
+package net.atos.ari.cdr.starter;
 
 import static org.junit.Assert.assertEquals;
 
@@ -19,12 +19,12 @@ import ca.uhn.fhir.rest.client.api.ServerValidationModeEnum;
 import ca.uhn.fhir.rest.client.interceptor.LoggingInterceptor;
 
 @Category(IntegrationTest.class)
-public class ExampleServerIT {
+public class TestServerIT {
 
-	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(ExampleServerIT.class);
+	private static final org.slf4j.Logger ourLog = org.slf4j.LoggerFactory.getLogger(TestServerIT.class);
 	private static IGenericClient ourClient;
 	private static FhirContext ourCtx = FhirContext.forDstu3();
-	private static int ourPort;
+	private static int ourPort = 8080;
 
 	private static Server ourServer;
 	private static String ourServerBase;
@@ -63,7 +63,7 @@ public class ExampleServerIT {
 		webAppContext.setDescriptor(path + "/src/main/webapp/WEB-INF/web.xml");
 		webAppContext.setResourceBase(path + "/target/hapi-fhir-jpaserver-oauth");
 		webAppContext.setParentLoaderPriority(true);
-
+		
 		ourServer.setHandler(webAppContext);
 		ourServer.start();
 
@@ -76,7 +76,6 @@ public class ExampleServerIT {
 	}
 
 	public static void main(String[] theArgs) throws Exception {
-		ourPort = 8080;
 		beforeClass();
 	}
 

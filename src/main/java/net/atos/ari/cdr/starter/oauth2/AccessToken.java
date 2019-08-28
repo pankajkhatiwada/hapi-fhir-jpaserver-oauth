@@ -24,7 +24,7 @@
  * OAuth 2.0 Token definition
  */
 
-package ca.uhn.fhir.jpa.demo.oauth2;
+package net.atos.ari.cdr.starter.oauth2;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

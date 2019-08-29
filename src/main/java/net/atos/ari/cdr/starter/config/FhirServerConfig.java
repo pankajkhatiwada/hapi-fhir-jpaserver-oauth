@@ -36,16 +36,28 @@ import net.atos.ari.cdr.starter.oauth2.KeyCloakInterceptor;
 public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FhirServerConfig.class);
 
-	// Const from properties
-	private static String DB_VENDOR = System.getenv("DB_VENDOR");
-	private static final String MYSQL_URL = System.getenv("MYSQL_URL");
-	private static final String MYSQL_USER = System.getenv("MYSQL_USER");
-	private static final String MYSQL_PASS = System.getenv("MYSQL_PASS");
-	private static final String LUCENE_FOLDER = System.getenv("LUCENE_FOLDER");	
-	
 	private static final String DEFAULT_LUCENE_FOLDER = "target/lucenefiles";
-	private static final String MYSQL_DB_VENDOR = "MYSQL";
-	private static final String DERBY_DB_VENDOR = "DERBY";
+	private static final String MARIADB_VENDOR = "MARIADB";
+	private static final String MYSQL_VENDOR = "MYSQL";
+	private static final String MYSQL_DEFAULT_PORT = "3306";
+	private static final String DERBY_VENDOR = "DERBY";
+	private static final String LOCALHOST = "localhost";
+
+	// Const from properties
+	private static final String DB_VENDOR = System.getenv("DB_VENDOR") == null? 
+			DERBY_VENDOR: System.getenv("DB_VENDOR");
+	private static final String DB_HOST = System.getenv("DB_HOST") == null? 
+			LOCALHOST: System.getenv("DB_HOST");
+	private static final String DB_PORT = System.getenv("DB_PORT") == null? 
+			MYSQL_DEFAULT_PORT: System.getenv("DB_PORT");
+	private static final String DB_USER = System.getenv("DB_USER") == null? 
+			"": System.getenv("DB_USER");
+	private static final String DB_PASSWORD = System.getenv("DB_PASSWORD") == null? 
+			"": System.getenv("DB_PASSWORD");
+	private static final String DB_DATABASE = System.getenv("DB_DATABASE") == null? 
+			"": System.getenv("DB_DATABASE");
+	private static final String LUCENE_FOLDER = System.getenv("LUCENE_FOLDER") == null? 
+			DEFAULT_LUCENE_FOLDER:System.getenv("LUCENE_FOLDER");	
 
 	/**
 	 * Configure FHIR properties around the the JPA server via this bean
@@ -78,21 +90,24 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	public BasicDataSource dataSource() {
 		BasicDataSource retVal = new BasicDataSource();
 		try {
-			if (DB_VENDOR == null)
-				DB_VENDOR = DERBY_DB_VENDOR;
+			retVal.setUsername(DB_USER);
+			retVal.setPassword(DB_PASSWORD);
+
 			switch (DB_VENDOR) {
-				case MYSQL_DB_VENDOR:
+				case MYSQL_VENDOR:
 					retVal.setDriver(new com.mysql.jdbc.Driver());
-					retVal.setUrl(MYSQL_URL);
-					retVal.setUsername(MYSQL_USER);
-					retVal.setPassword(MYSQL_PASS);
+					retVal.setUrl("jdbc:mysql://"+DB_HOST+":" + DB_PORT + "/" +
+							DB_DATABASE + "?useSSL=false&serverTimezone=UTC");
 					break;
-				case DERBY_DB_VENDOR:
+				case MARIADB_VENDOR:
+					retVal.setDriver(new org.mariadb.jdbc.Driver());
+					retVal.setUrl("jdbc:mariadb://"+DB_HOST+":" + DB_PORT + "/" +
+							DB_DATABASE + "?useSSL=false&serverTimezone=UTC");
+					break;
+				case DERBY_VENDOR:
 				default:
 					retVal.setDriver(new org.apache.derby.jdbc.EmbeddedDriver());
 					retVal.setUrl("jdbc:derby:directory:target/jpaserver_derby_files;create=true");
-					retVal.setUsername("");
-					retVal.setPassword("");
 			}
 			return retVal;
 		} catch (SQLException sqlex) {
@@ -115,13 +130,14 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 		Properties extraProperties = new Properties();
 		LOGGER.info("DB_VENDOR: {}", DB_VENDOR);
 
-		if (DB_VENDOR == null)
-			DB_VENDOR = DERBY_DB_VENDOR;
 		switch (DB_VENDOR) {
-			case MYSQL_DB_VENDOR:
+			case MYSQL_VENDOR:
 				extraProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQL5InnoDBDialect");
 				break;
-			case DERBY_DB_VENDOR:
+			case MARIADB_VENDOR:
+				extraProperties.put("hibernate.dialect", "org.hibernate.dialect.MariaDB103Dialect");
+				break;				
+			case DERBY_VENDOR:
 			default:
 				extraProperties.put("hibernate.dialect", DerbyTenSevenHapiFhirDialect.class.getName());
 		}

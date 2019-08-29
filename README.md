@@ -33,30 +33,67 @@ mvn jetty:run
 
 Go to your browser and type http://localhost:8080/hapi
 
-If you enable the OAuth capability deploy the [Keycloak OAuth 2.0](https://github.com/AriHealth/keycloak-auth) and dependencies.
+If you enable the OAuth capability (see next section) deploy the [Keycloak OAuth 2.0](https://github.com/AriHealth/keycloak-auth) and dependencies.
 
 ## Environment variables
 
-Some environment variables must be set prior to the execution:
+The following environment variables must be set prior to the execution:
 
-	DB_VENDOR=
-	MYSQL_URL=
-	MYSQL_USER=
-	MYSQL_PASS=
-	LUCENE_FOLDER=/var/lib/tomcat8/webapps/hapi/indexes
-	OAUTH_ENABLE=true or false
-	OAUTH_URL=
+	DB_VENDOR=DERBY - List of possible vendors [DERBY,MYSQL,MARIADB]
+	DB_HOST=localhost - Host where the database is deployed (it can be empty for DERBY)
+	DB_PORT=3306 -  - Port where the database is deployed (it can be empty for DERBY)
+	DB_USER=fhiruser - FHIR user for the database (it can be empty for DERBY)
+	DB_PASSWORD=fhirpwd
+	DB_DATABASE=fhirdb
+	LUCENE_FOLDER=/var/lib/tomcat8/webapps/hapi/indexes - Place where the Lucene index are stored
+	OAUTH_ENABLE=false - To enable/disable authentication
+	OAUTH_URL=http://auth:8081 - In case of enabling authentication, the url where the Keycloak OAuth 2.0 is available
 
 ## Docker deployment
+
+### Full stack deployment using docker-compose
+
+The project comes with a [docker-compose](https://docs.docker.com/compose/) which deploys testing containers for Keycloak (port: 9090), HAPI (8080), OAuth 2.0 and the authenticator (8081):
+
+0. Check the configuration values at the environment (`.env`) file. You can modify at your needs
+1. Execute `docker-compose up -d`
+2. Wait a couple of minutes until the stack is deployed. Check the logs with `docker logs --details hapi-fhir`
+3. Access the Keycloak console `http://localhost:9090` (**user**: admin, **password**: Pa55w0rd)
+* Create a realm `HAPIFHIR`
+* Inside the realm create a client_id: `hapifhir-client`
+* Create a user: test. Modify the creadentials (temporary off)
+4. Access the authenticator `http://localhost:8081/swagger-ui.html`
+* Open Login operation under Auth controller, `Try it out`:
+* In the JSON include the user created in Keycloak (`test`)
+* The response is a OAuth access token
+* Copy the access token
+* When creating the FHIR context add the Authorization header: `Bearer <access token>` (see the java snippet below)
+```
+		BearerTokenAuthInterceptor authInterceptor = new BearerTokenAuthInterceptor(token); 
+		// Create a client and post the transaction to the server
+		IGenericClient client = ctx.newRestfulGenericClient(url);
+		// Register the interceptor with your client (either style)
+		client.registerInterceptor(authInterceptor);
+```
+5. Check that the resource has been created in HAPI `http://localhost:8080`
+
+### Simple deployment
+
+It is supposed [auth](https://hub.docker.com/r/ccavero/keycloak-auth) are deployed (check the docker-compose deployment for the full stack).
+
+Deploy a MariaDB instance:
+```
+	docker run -d --name mariadb mariadb/server:10.3 -e MYSQL_ROOT_PASSWORD=rootpwd -e MYSQL_USER=fhiruser -e MYSQL_PASSWORD=fhirpwd MYSQL_DATABASE=fhirdb
+```
 
 Build the image:
 ```
 	docker build -t hapi-fhir/hapi-fhir-cdr .
 ```
 
-Use this command to start the container: 
+Use this command to start the container (take into account the links to auth and mariadb containers): 
 ```
-	docker run -d --name hapi-fhir-cdr -p 8080:8080 hapi-fhir/hapi-fhir-cdr -e DB_VENDOR=MYSQL -e MYSQL_URL=XXX -e MYSQL_USER=XXX -e MYSQL_PASS=XXX -e LUCENE_FOLDER=XXX
+	docker run -d --name hapi-fhir-cdr -p 8080:8080 hapi-fhir/hapi-fhir-cdr -e DB_VENDOR=MARIADB -e DB_HOST=mariadb -e DB_PORT=3306 -e DB_USER=fhiruser -e DB_PASSWORD=fhirpwd DB_DATABASE=fhirdb -e LUCENE_FOLDER=XXX OAUTH_ENABLE=true OAUTH_URL=http://auth:8081/ --link auth:auth --link mariadb:mariadb 
 ```
 
 Note: with this command data is persisted across container restarts, but not after removal of the container. Use a new container for the database with a shared docker volume.

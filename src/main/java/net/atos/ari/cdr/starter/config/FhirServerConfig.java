@@ -36,11 +36,14 @@ import net.atos.ari.cdr.starter.oauth2.KeyCloakInterceptor;
 public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	private static final Logger LOGGER = LoggerFactory.getLogger(FhirServerConfig.class);
 
+	private static final String DEFAULT_MYSQL_PORT = "3306";
 	private static final String DEFAULT_LUCENE_FOLDER = "target/lucenefiles";
+	
 	private static final String MARIADB_VENDOR = "MARIADB";
 	private static final String MYSQL_VENDOR = "MYSQL";
-	private static final String MYSQL_DEFAULT_PORT = "3306";
+	private static final String POSTGRESQL_VENDOR = "POSTGRESQL";
 	private static final String DERBY_VENDOR = "DERBY";
+
 	private static final String LOCALHOST = "localhost";
 
 	// Const from properties
@@ -49,7 +52,7 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 	private static final String DB_HOST = System.getenv("DB_HOST") == null? 
 			LOCALHOST: System.getenv("DB_HOST");
 	private static final String DB_PORT = System.getenv("DB_PORT") == null? 
-			MYSQL_DEFAULT_PORT: System.getenv("DB_PORT");
+			DEFAULT_MYSQL_PORT: System.getenv("DB_PORT");
 	private static final String DB_USER = System.getenv("DB_USER") == null? 
 			"": System.getenv("DB_USER");
 	private static final String DB_PASSWORD = System.getenv("DB_PASSWORD") == null? 
@@ -92,17 +95,18 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 		try {
 			retVal.setUsername(DB_USER);
 			retVal.setPassword(DB_PASSWORD);
+			retVal.setUrl("jdbc:"+ DB_VENDOR.toLowerCase() +"://"+DB_HOST+":" + DB_PORT + "/" +
+					DB_DATABASE + "?useSSL=false&serverTimezone=UTC");
 
 			switch (DB_VENDOR) {
 				case MYSQL_VENDOR:
 					retVal.setDriver(new com.mysql.jdbc.Driver());
-					retVal.setUrl("jdbc:mysql://"+DB_HOST+":" + DB_PORT + "/" +
-							DB_DATABASE + "?useSSL=false&serverTimezone=UTC");
 					break;
 				case MARIADB_VENDOR:
 					retVal.setDriver(new org.mariadb.jdbc.Driver());
-					retVal.setUrl("jdbc:mariadb://"+DB_HOST+":" + DB_PORT + "/" +
-							DB_DATABASE + "?useSSL=false&serverTimezone=UTC");
+					break;
+				case POSTGRESQL_VENDOR:
+					retVal.setDriver(new org.postgresql.Driver());
 					break;
 				case DERBY_VENDOR:
 				default:
@@ -136,6 +140,9 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 				break;
 			case MARIADB_VENDOR:
 				extraProperties.put("hibernate.dialect", "org.hibernate.dialect.MariaDB103Dialect");
+				break;				
+			case POSTGRESQL_VENDOR:
+				extraProperties.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
 				break;				
 			case DERBY_VENDOR:
 			default:

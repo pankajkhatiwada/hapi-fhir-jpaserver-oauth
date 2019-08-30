@@ -67,11 +67,11 @@ The project comes with a [docker-compose](https://docs.docker.com/compose/) whic
 * In the JSON include the user created in Keycloak (`test`)
 * The response is a OAuth access token
 * Copy the access token
-* When creating the FHIR context add the Authorization header: `Bearer <access token>` (see the java snippet below)
+* Last thing is to configure the [HAPI client including the authorization token in the header](http://hapifhir.io/doc_rest_client_interceptor.html). Authorization header: `Bearer <access token>` (see the java snippet below)
 ```
 		BearerTokenAuthInterceptor authInterceptor = new BearerTokenAuthInterceptor(token); 
 		// Create a client and post the transaction to the server
-		IGenericClient client = ctx.newRestfulGenericClient(url);
+		IGenericClient client = ctx.newRestfulGenericClient(FHIR_URL);
 		// Register the interceptor with your client (either style)
 		client.registerInterceptor(authInterceptor);
 ```
@@ -81,17 +81,31 @@ The project comes with a [docker-compose](https://docs.docker.com/compose/) whic
 
 It is supposed [auth](https://hub.docker.com/r/ccavero/keycloak-auth) are deployed (check the docker-compose deployment for the full stack).
 
+#### Database
+
+Deploy a MySQL instance:
+```
+	docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=rootpwd -e MYSQL_USER=fhiruser -e MYSQL_PASSWORD=fhirpwd MYSQL_DATABASE=fhirdb mysql:5.7
+```
+
 Deploy a MariaDB instance:
 ```
-	docker run -d --name mariadb mariadb/server:10.3 -e MYSQL_ROOT_PASSWORD=rootpwd -e MYSQL_USER=fhiruser -e MYSQL_PASSWORD=fhirpwd MYSQL_DATABASE=fhirdb
+	docker run -d --name mariadb -e MYSQL_ROOT_PASSWORD=rootpwd -e MYSQL_USER=fhiruser -e MYSQL_PASSWORD=fhirpwd MYSQL_DATABASE=fhirdb mariadb/server:10.3
 ```
+
+Deploy a PostgreSQL instance:
+```
+	docker run -d --name postgres -e POSTGRES_USER=fhiruser -e POSTGRES_PASSWORD=fhirpwd POSTGRES_DB=fhirdb postgres
+```
+
+#### HAPI CDR
 
 Build the image:
 ```
 	docker build -t hapi-fhir/hapi-fhir-cdr .
 ```
 
-Use this command to start the container (take into account the links to auth and mariadb containers): 
+Use this command to start the container (take into account the links to auth and database containers). The possibilities for the DB_VENDOR are [DERBY, MYSQL, MARIADB, POSTGRESQL (DB_PORT 5432)]: 
 ```
 	docker run -d --name hapi-fhir-cdr -p 8080:8080 hapi-fhir/hapi-fhir-cdr -e DB_VENDOR=MARIADB -e DB_HOST=mariadb -e DB_PORT=3306 -e DB_USER=fhiruser -e DB_PASSWORD=fhirpwd DB_DATABASE=fhirdb -e LUCENE_FOLDER=XXX OAUTH_ENABLE=true OAUTH_URL=http://auth:8081/ --link auth:auth --link mariadb:mariadb 
 ```
@@ -140,7 +154,7 @@ We follow the recommended [MySQL configuration](https://groups.google.com/forum/
 
 ## OAuth2 authorization
 
-[OAuth2 authorization in HAPI](http://hapifhir.io/doc_rest_server_security.html#Authorization_Interceptor) is done [via Interceptors](http://hapifhir.io/doc_rest_server_interceptor.html). We reuse the [careconnect implementation](https://github.com/nhsconnect/careconnect-reference-implementation/blob/master/ccri-fhirgatewayhttps/src/main/java/uk/nhs/careconnect/ri/gateway/https/oauth2/OAuthTokenUtil.java) creating a new IServerInterceptor in FhirConfig that is automatically registered when launching the server:
+We use as IdM [KeyCloak](http://www.keycloak.org/). [OAuth2 authorization in HAPI](http://hapifhir.io/doc_rest_server_security.html#Authorization_Interceptor) is done [via Interceptors](http://hapifhir.io/doc_rest_server_interceptor.html). We reuse the [careconnect implementation](https://github.com/nhsconnect/careconnect-reference-implementation/blob/master/ccri-fhirgatewayhttps/src/main/java/uk/nhs/careconnect/ri/gateway/https/oauth2/OAuthTokenUtil.java) creating a new IServerInterceptor in FhirConfig that is automatically registered when launching the server:
 ```
     @Bean(autowire = Autowire.BY_TYPE)
     public IServerInterceptor subscriptionKeyCloakInterceptor() {
@@ -149,7 +163,6 @@ We follow the recommended [MySQL configuration](https://groups.google.com/forum/
     }
 ```
 
-We use as IdM [KeyCloak](http://www.keycloak.org/). Provision scripts to run [KeyCloak and HAPI behind a reverse proxy](https://github.com/Codingpedia/codingmarks-api/wiki/Keycloak-Setup-for-Production) are provided [here](https://github.com/AriHealth/puppet-ari). The REST API which provides login and isValid authorization are also provided [here](https://github.com/AriHealth/keycloak-auth). Last thing is to configure the [HAPI client including the authorization token in the header](http://hapifhir.io/doc_rest_client_interceptor.html):
 
 ```
     BearerTokenAuthInterceptor authInterceptor = new BearerTokenAuthInterceptor(token);

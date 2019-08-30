@@ -55,7 +55,7 @@ The following environment variables must be set prior to the execution:
 
 The project comes with a [docker-compose](https://docs.docker.com/compose/) which deploys testing containers for Keycloak (port: 9090), HAPI (8080), OAuth 2.0 and the authenticator (8081):
 
-0. Check the configuration values at the environment (`.env`) file. You can modify at your needs
+0. Check the configuration values at the environment (`.env`) file. Put OAUTH_ENABLE=true to protect the API. You can modify at your needs.
 1. Execute `docker-compose up -d`
 2. Wait a couple of minutes until the stack is deployed. Check the logs with `docker logs --details hapi-fhir`
 3. Access the Keycloak console `http://localhost:9090` (**user**: admin, **password**: Pa55w0rd)
@@ -105,7 +105,7 @@ Build the image:
 	docker build -t hapi-fhir/hapi-fhir-cdr .
 ```
 
-Use this command to start the container (take into account the links to auth and database containers). The possibilities for the DB_VENDOR are [DERBY, MYSQL, MARIADB, POSTGRESQL (DB_PORT 5432)]: 
+Use this command to start the container (take into account the links to auth and database containers). The possibilities for the DB_VENDOR are [DERBY, MYSQL, MARIADB, POSTGRESQL (DB_PORT 5432)]. For instance if MariaDB is selected the docker configuration is as follows: 
 ```
 	docker run -d --name hapi-fhir-cdr -p 8080:8080 hapi-fhir/hapi-fhir-cdr -e DB_VENDOR=MARIADB -e DB_HOST=mariadb -e DB_PORT=3306 -e DB_USER=fhiruser -e DB_PASSWORD=fhirpwd DB_DATABASE=fhirdb -e LUCENE_FOLDER=XXX OAUTH_ENABLE=true OAUTH_URL=http://auth:8081/ --link auth:auth --link mariadb:mariadb 
 ```

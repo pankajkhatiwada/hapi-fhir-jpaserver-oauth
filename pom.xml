@@ -34,6 +34,7 @@
 		<hapi.version>3.8.0</hapi.version>
 		<mariadb.version>2.4.3</mariadb.version>
 		<mysql.version>6.0.5</mysql.version>
+		<postgresql.version>42.2.6</postgresql.version>
 
 		<!-- javadoc and scm configuration for the CI -->
 		<maven.javadoc.failOnError>false</maven.javadoc.failOnError>
@@ -291,7 +292,13 @@
 		    <artifactId>mariadb-java-client</artifactId>
 		    <version>${mariadb.version}</version>
 		</dependency>
-
+		
+		<!-- PostgreSQL -->
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>${postgresql.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>

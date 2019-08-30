@@ -50,21 +50,21 @@ services:
 #    restart: always
 
 # PostgreSQL database for HAPI
-  postgres:
-    image: postgres
-    container_name: postgres
-#    volumes:
-#      - ${CONFIG_FOLDER}/postgresql/data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: ${DB_DB}
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: always
+#  postgres:
+#    image: postgres
+#    container_name: postgres
+##    volumes:
+##      - ${CONFIG_FOLDER}/postgresql/data:/var/lib/postgresql/data
+#    environment:
+#      POSTGRES_DB: ${DB_DB}
+#      POSTGRES_USER: ${DB_USER}
+#      POSTGRES_PASSWORD: ${DB_PASSWORD}
+#    healthcheck:
+#      test: ["CMD-SHELL", "pg_isready -U postgres"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 5
+#    restart: always
 
 # MariaDB database for HAPI
 #  mariadb:
@@ -98,21 +98,23 @@ services:
   hapi-fhir:
     container_name: hapi-fhir
     build: .
-    environment:
-       # Specify DB_VENDOR if we want a non default db in Keycloak
-      DB_VENDOR: ${DB_VENDOR}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT}
-      DB_DATABASE: ${DB_DB}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      OAUTH_URL: ${OAUTH_URL}  
-      OAUTH_ENABLE: ${OAUTH_ENABLE}
+#    environment:
+#       # Specify DB_VENDOR in .env if you want a non default db in HAPI
+#      DB_VENDOR: ${DB_VENDOR}
+#      DB_HOST: ${DB_HOST}
+#      DB_PORT: ${DB_PORT}
+#      DB_DATABASE: ${DB_DB}
+#      DB_USER: ${DB_USER}
+#      DB_PASSWORD: ${DB_PASSWORD}
+#      OAUTH_URL: ${OAUTH_URL}  
+#      OAUTH_ENABLE: ${OAUTH_ENABLE}
     ports:
       - 8080:8080
     depends_on:
       - auth
-      - postgres
+#      - mysql
+#      - mariadb
+#      - postgres
       - keycloak
     restart: always
 

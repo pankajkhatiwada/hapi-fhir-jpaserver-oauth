@@ -35,8 +35,8 @@ services:
 #  mysql:
 #    image: mysql:5.7
 #    container_name: mysql
-#    volumes:
-#      - ${CONFIG_FOLDER}/mysql/data:/var/lib/mysql
+##    volumes:
+##      - ${CONFIG_FOLDER}/mysql/data:/var/lib/mysql
 #    environment:
 #      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
 #      MYSQL_DATABASE: ${DB_DB}
@@ -49,23 +49,40 @@ services:
 #        retries: 3
 #    restart: always
 
-# MariaDB database for HAPI
-  mariadb:
-    image: mariadb/server:10.3
-    container_name: mariadb
+# PostgreSQL database for HAPI
+  postgres:
+    image: postgres
+    container_name: postgres
 #    volumes:
-#      - ${CONFIG_FOLDER}/mysql/data:/var/lib/mysql
+#      - ${CONFIG_FOLDER}/postgresql/data:/var/lib/postgresql/data
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${DB_DB}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DB}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     healthcheck:
-        test: ["CMD-SHELL", "mysqladmin -h 'localhost' -u root -p${DB_ROOT_PASSWORD} ping --silent"]
-        interval: 30s
-        timeout: 30s
-        retries: 3
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: always
+
+# MariaDB database for HAPI
+#  mariadb:
+#    image: mariadb/server:10.3
+#    container_name: mariadb
+##    volumes:
+##      - ${CONFIG_FOLDER}/mysql/data:/var/lib/mysql
+#    environment:
+#      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+#      MYSQL_DATABASE: ${DB_DB}
+#      MYSQL_USER: ${DB_USER}
+#      MYSQL_PASSWORD: ${DB_PASSWORD}
+#    healthcheck:
+#        test: ["CMD-SHELL", "mysqladmin -h 'localhost' -u root -p${DB_ROOT_PASSWORD} ping --silent"]
+#        interval: 30s
+#        timeout: 30s
+#        retries: 3
+#    restart: always
 
   keycloak:
     image: jboss/keycloak
@@ -81,9 +98,6 @@ services:
   hapi-fhir:
     container_name: hapi-fhir
     build: .
-    depends_on:
-      hapi:
-          condition: service_healthy
     environment:
        # Specify DB_VENDOR if we want a non default db in Keycloak
       DB_VENDOR: ${DB_VENDOR}
@@ -91,23 +105,21 @@ services:
       DB_PORT: ${DB_PORT}
       DB_DATABASE: ${DB_DB}
       DB_USER: ${DB_USER}
-      DB_PASS: ${DB_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD}
       OAUTH_URL: ${OAUTH_URL}  
       OAUTH_ENABLE: ${OAUTH_ENABLE}
     ports:
       - 8080:8080
     depends_on:
+      - auth
+      - postgres
       - keycloak
-      - mariadb
     restart: always
 
 # Auth service
   auth:
     image: ccavero/keycloak-auth:latest
     container_name: auth
-    depends_on:
-      keycloak:
-          condition: service_healthy
     environment:
       KEYCLOAK_URL: ${KEYCLOAK_URL}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM}

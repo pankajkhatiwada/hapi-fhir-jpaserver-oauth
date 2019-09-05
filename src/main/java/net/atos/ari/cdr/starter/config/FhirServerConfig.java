@@ -117,7 +117,8 @@ public class FhirServerConfig extends BaseJavaConfigDstu3 {
 			}
 			retVal.setUsername(DB_USER);
 			retVal.setPassword(DB_PASSWORD);
-			retVal.setUrl("jdbc:"+ DB_VENDOR.toLowerCase() +"://"+DB_HOST+":" + DB_PORT + "/" +
+			if (DB_VENDOR.equalsIgnoreCase(DERBY_VENDOR) == false)
+				retVal.setUrl("jdbc:"+ DB_VENDOR.toLowerCase() +"://"+DB_HOST+":" + DB_PORT + "/" +
 					DB_DATABASE + "?useSSL=false&serverTimezone=UTC");
 			return retVal;
 		} catch (SQLException sqlex) {

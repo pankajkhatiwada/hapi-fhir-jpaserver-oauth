@@ -151,7 +151,8 @@ We follow the recommended [MySQL configuration](https://groups.google.com/forum/
 
 ## OAuth2 authorization
 
-We use as IdM [KeyCloak](http://www.keycloak.org/). [OAuth2 authorization in HAPI](http://hapifhir.io/doc_rest_server_security.html#Authorization_Interceptor) is done [via Interceptors](http://hapifhir.io/doc_rest_server_interceptor.html). We reuse the [careconnect implementation](https://github.com/nhsconnect/careconnect-reference-implementation/blob/master/ccri-fhirgatewayhttps/src/main/java/uk/nhs/careconnect/ri/gateway/https/oauth2/OAuthTokenUtil.java) creating a new IServerInterceptor in FhirConfig that is automatically registered when launching the server:
+We use as IdM [KeyCloak](http://www.keycloak.org/). [OAuth2 authorization in HAPI](http://hapifhir.io/doc_rest_server_security.html#Authorization_Interceptor) is done [via Interceptors](http://hapifhir.io/doc_rest_server_interceptor.html). We reuse the [careconnect implementation](https://github.com/nhsconnect/careconnect-reference-implementation/blob/master/ccri-fhirserver/src/main/java/uk/nhs/careconnect/ccri/fhirserver/oauth2/OAuthTokenUtil.java
+) creating a new IServerInterceptor in FhirConfig that is automatically registered when launching the server:
 ```
     @Bean(autowire = Autowire.BY_TYPE)
     public IServerInterceptor subscriptionKeyCloakInterceptor() {

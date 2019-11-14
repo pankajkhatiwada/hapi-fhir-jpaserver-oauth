@@ -6,7 +6,7 @@
 
 Open-source implementation of the FHIR specification in Java based on [HAPI](http://hapifhir.io/). HAPI FHIR CDR with support for several databases (Derby, MySQL, MariaDB and PostgreSQL) and OAuth. 
 
-Currently it supports supports [DSTU3](http://www.hl7.org/fhir/stu3/).
+Currently it supports [DSTU3](http://www.hl7.org/fhir/stu3/).
 
 ## Technology
 

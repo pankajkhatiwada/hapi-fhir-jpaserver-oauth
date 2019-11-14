@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/AriHealth/hapi-fhir-jpaserver-oauth.svg?branch=master)](https://travis-ci.org/AriHealth/hapi-fhir-jpaserver-oauth) [![codecov.io](https://codecov.io/gh/AriHealth/hapi-fhir-jpaserver-oauth/branch/master/graphs/badge.svg)](http://codecov.io/gh/AriHealth/hapi-fhir-jpaserver-oauth)
 
+Currently it supports supports [DSTU3](http://www.hl7.org/fhir/stu3/).
+
 ## Description
 
 Open-source implementation of the FHIR specification in Java based on [HAPI](http://hapifhir.io/). HAPI FHIR CDR with support for several databases (Derby, MySQL, MariaDB and PostgreSQL) and OAuth. 

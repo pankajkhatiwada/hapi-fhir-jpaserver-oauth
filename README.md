@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/AriHealth/hapi-fhir-jpaserver-oauth.svg?branch=master)](https://travis-ci.org/AriHealth/hapi-fhir-jpaserver-oauth) 
 [![codecov.io](https://codecov.io/gh/AriHealth/hapi-fhir-jpaserver-oauth/branch/master/graphs/badge.svg)](http://codecov.io/gh/AriHealth/hapi-fhir-jpaserver-oauth)
-[![docker build](https://img.shields.io/docker/cloud/build/fanjups/cicd-applied-to-spring-boot-java-app)](https://cloud.docker.com/u/fanjups/repository/docker/fanjups/cicd-applied-to-spring-boot-java-app)
 [![Docker Build](https://img.shields.io/docker/cloud/build/arihealth/hapi-fhir-cdr-oauth)](https://cloud.docker.com/u/arihealth/repository/docker/arihealth/hapi-fhir-cdr-oauth)
 [![Docker Pulls](https://img.shields.io/docker/pulls/arihealth/hapi-fhir-cdr-oauth)](https://cloud.docker.com/u/arihealth/repository/docker/arihealth/hapi-fhir-cdr-oauth)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache-yellow.svg)](https://opensource.org/licenses/Apache-2.0)

@@ -4,7 +4,7 @@
 [![codecov.io](https://codecov.io/gh/AriHealth/hapi-fhir-jpaserver-oauth/branch/master/graphs/badge.svg)](http://codecov.io/gh/AriHealth/hapi-fhir-jpaserver-oauth)
 [![Docker Build](https://img.shields.io/docker/cloud/build/arihealth/hapi-fhir-cdr-oauth)](https://cloud.docker.com/u/arihealth/repository/docker/arihealth/hapi-fhir-cdr-oauth)
 [![Docker Pulls](https://img.shields.io/docker/pulls/arihealth/hapi-fhir-cdr-oauth)](https://cloud.docker.com/u/arihealth/repository/docker/arihealth/hapi-fhir-cdr-oauth)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache-yellow.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## Description
 

@@ -49,6 +49,7 @@ The following environment variables must be set prior to the execution:
 * `LUCENE_FOLDER`: Place where the Lucene index are stored (`optional`, default value `/var/lib/tomcat8/webapps/hapi/indexes`).
 * `OAUTH_ENABLE`: To enable/disable authentication (`optional`, default value `false`).
 * `OAUTH_URL`: In case of enabling authentication, the url where the Keycloak OAuth 2.0 is available (`optional`, default value `http://auth:8081`).
+* `LOGGING_FOLDER`: To configure the folder for the logs to be managed by ELK (`optional`, default value `logs`)
 
 ## Database
 

@@ -1,21 +1,37 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xml>
-<configuration scan="true" scanPeriod="30 seconds">
+<configuration>
+	<property name="LOG_DIR" value="${LOGGING_FOLDER:-logs}" />
+	<property name="LOG_FILE" value="cdr" />
 
-	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-			<level>INFO</level>
-		</filter>
+	<appender name="STDOUT"
+		class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%file:%line] %msg%n</pattern>
+			<pattern>
+				%d{HH:mm:ss.SSS} %-5level [%thread] %C{0}.%M[%L] - %msg%n
+			</pattern>
 		</encoder>
 	</appender>
 
-	<root level="INFO">
-		<appender-ref ref="STDOUT" />
-	</root>
-	
-	<!-- Turn on debug logging for our FhirServerConfig. -->
-    <logger name="ca.uhn.fhir.jpa.demo.FhirServerConfig" level="DEBUG" />
+	<appender name="SAVE-TO-FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_DIR}/${LOG_FILE}.log</file>
+		<encoder
+			class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<Pattern>
+				%d{dd-MM-yyyy HH:mm:ss.SSS} %-5level [%thread] %logger{36}.%M - %msg%n
+			</Pattern>
+		</encoder>
+		<rollingPolicy
+			class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+			<!-- rollover daily & on size -->
+			<maxFileSize>10MB</maxFileSize>
+			<fileNamePattern>
+				${LOG_DIR}/archived/${LOG_FILE}_%d{dd-MM-yyyy}_%i.log
+			</fileNamePattern>
+			<maxHistory>10</maxHistory>
+			<totalSizeCap>100MB</totalSizeCap>
+		</rollingPolicy>
+	</appender>
 
 </configuration>

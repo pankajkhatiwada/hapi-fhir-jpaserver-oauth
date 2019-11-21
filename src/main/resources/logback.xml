@@ -34,4 +34,13 @@
 		</rollingPolicy>
 	</appender>
 
+	<root level="debug">
+			<appender-ref ref="STDOUT" />
+			<appender-ref ref="SAVE-TO-FILE" />
+	</root>
+
+<!-- 	<root level="info">
+		<appender-ref ref="SAVE-TO-FILE" />
+	</root>  -->
+
 </configuration>
